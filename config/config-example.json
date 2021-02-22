@@ -1,0 +1,15 @@
+{
+    "APP": "",
+    "APP_VERSION": "",
+    "APP_PORT_HTTP": "",
+    "APP_PORT_HTTPS": "",
+    "TELEGRAM": {
+        "TELEGRAM_USER_ID": "",
+        "BOT": "",
+        "TOKEN": ""
+    },
+    "EXCHANGE_KRAKEN": {
+        "API_KEY": "",
+        "API_SECRET": ""
+    }
+}

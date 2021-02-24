@@ -36,7 +36,7 @@ const logger = createLogger({
 });
 
 
-if (process.env.NODE_ENV !== 'production') {
+//if (process.env.NODE_ENV !== 'production') {
     logger.add(new transports.Console({
         format: format.combine(
             format.colorize(),
@@ -47,6 +47,6 @@ if (process.env.NODE_ENV !== 'production') {
             custom_format_console
         )
     }));
-}
+//}
 
 module.exports = logger

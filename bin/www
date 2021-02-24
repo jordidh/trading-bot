@@ -6,31 +6,31 @@
 var nconf = require('nconf')
 var app = require('../app')
 var debug = require('debug')(nconf.get("APP") + ':server')
-var http = require('http')
+//var http = require('http')
 var https = require('https')
 var certs = require('../certs/certs')
-var logger = require('../app/logger')
+var logger = require('../api/logger')
 
 /**
  * Get port from environment and store in Express.
  */
-var portHttp = normalizePort(nconf.get("APP_PORT_HTTP"))
+//var portHttp = normalizePort(nconf.get("APP_PORT_HTTP"))
 var portHttps = normalizePort(nconf.get("APP_PORT_HTTPS"))
-app.set('portHttp', portHttp)
+//app.set('portHttp', portHttp)
 app.set('portHttps', portHttps)
 
 /**
  * Create HTTP / HTTPS Server.
  */
-var serverHttp = http.createServer(app)
+//var serverHttp = http.createServer(app)
 var serverHttps = https.createServer(certs.ssl, app)
 
 /**
  * Listen on provided port, on all network interfaces.
  */
-serverHttp.listen(portHttp)
-serverHttp.on('error', onError)
-serverHttp.on('listening', onListeningHttp)
+//serverHttp.listen(portHttp)
+//serverHttp.on('error', onError)
+//serverHttp.on('listening', onListeningHttp)
 
 serverHttps.listen(portHttps)
 serverHttps.on('error', onError)
@@ -87,15 +87,15 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
-function onListeningHttp() {
-  var addr = serverHttp.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
-  //console.log('Http listening on ' + bind);
-  logger.info({ message: 'SERVIDOR HTTP: ' + bind })
-}
+//function onListeningHttp() {
+//  var addr = serverHttp.address();
+//  var bind = typeof addr === 'string'
+//    ? 'pipe ' + addr
+//    : 'port ' + addr.port;
+//  debug('Listening on ' + bind);
+//  //console.log('Http listening on ' + bind);
+//  logger.info({ message: 'SERVIDOR HTTP: ' + bind })
+//}
 
 /**
  * Event listener for HTTPS SecureServer "listening" event.
@@ -106,6 +106,6 @@ function onListeningHttps() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
-  //console.log('Https listening on ' + bind);
-    logger.info({ message: 'SERVIDOR HTTPS: ' + bind })
+  console.log('Https listening on ' + bind);
+  logger.info({ message: 'SERVIDOR HTTPS: ' + bind })
 }

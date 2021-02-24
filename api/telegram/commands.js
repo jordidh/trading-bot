@@ -7,7 +7,7 @@
 var path = require('path')
 var images = require('../../helpers/telegram/images')
 var utils = require('../../helpers/utils/utils')
-var bot = require('../../app/telegram')
+var bot = require('../../api/telegram')
 var database = require('../database')
 
 exports.sendGIF = async function (id) {

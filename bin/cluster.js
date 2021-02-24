@@ -5,7 +5,7 @@
  */
 var cluster = require('cluster')
 var numCPUs = require('os').cpus().length
-const logger = require('../app/logger')
+const logger = require('../api/logger')
 
 /**
  * Package Functions

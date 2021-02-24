@@ -5,10 +5,10 @@
  */
 var path = require('path')
 var nconf = require('nconf')
-const logger = require('../app/logger')
-var database = require('../app/database')
+const logger = require('../api/logger')
+var database = require('../api/database')
 const moment = require('moment');
-const kraken = require('../app/exchanges/kraken/apis')
+const kraken = require('../api/exchanges/kraken/apis')
 
 /**
  * Package Functions

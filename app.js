@@ -1,12 +1,15 @@
 /**
  * Module dependencies
  */
-var express = require('express')
-var app = new express()
+var express = require('express');
+var app = new express();
 
-require('./app/express')(app)
-require('./app/routes')(app)
-require('./app/ngrok')
-require('./app/telegram/telegram')
+require('./api/express')(app);
+require('./api/routes')(app);
 
-module.exports = app
+// Descomentar només si s'executa des d'un servidor que no té IP pública fixa
+require('./api/ngrok');
+
+require('./api/telegram/telegram');
+
+module.exports = app;

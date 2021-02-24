@@ -3,17 +3,18 @@
 /**
  * Module dependencies
  */
-var fs = require('fs')
-var path = require('path')
+var fs = require('fs');
+var path = require('path');
+var nconf = require('nconf');
 
 /**
  * Package Functions
  */
-var keyPath = path.join(__dirname, '/certs/key-20210222-094930.pem')
-var certPath = path.join(__dirname, '/certs/cert-20210222-094930.crt')
+var keyPath = path.join(__dirname, nconf.get("APP_CERT_KEY"));
+var certPath = path.join(__dirname, nconf.get("APP_CERT_CERT"));
 
-var hskey = fs.readFileSync(keyPath)
-var hscert = fs.readFileSync(certPath)
+var hskey = fs.readFileSync(keyPath);
+var hscert = fs.readFileSync(certPath);
 
 var certificates = {
     key: hskey,

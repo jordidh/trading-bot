@@ -30,8 +30,8 @@ const logger = createLogger({
         custom_format_logger
     ),
     transports: [
-        new transports.File({ filename: './logs/errors.log', level: 'error', handleExceptions: true }),
-        new transports.File({ filename: './logs/logs.log' })
+        //new transports.File({ filename: './logs/errors.log', level: 'error', handleExceptions: true }),
+        //new transports.File({ filename: './logs/logs.log' })
     ]
 });
 

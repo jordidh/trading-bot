@@ -1,4 +1,3 @@
-
 "use strict";
 
 /**
@@ -8,12 +7,11 @@ var nconf = require('nconf')
 const ngrok = require('ngrok')
 var logger = require('./logger')
 var database = require('../app/database')
-var commands = require('../helpers/telegram/commands')
 
 /**
  * Package Functions
  */
-exports.start = async function () {
+exports.ngrok_start = async function () {
     try {
         await ngrok.connect({
             proto: 'http', // http|tcp|tls, defaults to http
@@ -31,17 +29,17 @@ exports.start = async function () {
         await ngrok.kill()
     }
 
-    const { tunnels } = JSON.parse(await ngrok.getApi().get('api/tunnels') ? '{}')
+    const { tunnels } = JSON.parse(await ngrok.getApi().get('api/tunnels'))
     if (tunnels.length > 0 && tunnels.length == 2) {
         // Cada vez que el servidor se inicie se borrará la tabla ngrok
         await database.run(`DELETE FROM ngrok`)
         // Insertaremos los datos relativos al tunnel ngrok
         await database.run(`INSERT INTO ngrok (local,https,http) VALUES('` + tunnels[0].config.addr + `', '` + tunnels[0].public_url + `', '` + tunnels[1].public_url + `')`)
     }
+
     logger.info({ message: 'SERVIDOR NGROK OK!' })
-    // Enviaremos de forma masiva a todos los usuarios registrados que el servicio ngrok ha sido iniciado
-    await commands.sendBroadcastNewNgrokServer()
 }
 
-this.start()
+// Lanzador 
+this.ngrok_start()
 

@@ -36,7 +36,7 @@ Esbrina l'id de l'usuari de telegram (el que rebrà els missatges del bot)
 Crea a Kraken API i guarda les claus
 1. Ves a "My Account", Jordi > Security > API
 2. Add key
-3. Marcar Order & Trades i Other
+3. Marcar: "Order & Trades", "Other" i de "Funds" "Query funds"
 4. Apunta la API al fitxer de configuració
 5. Guarda-la en un lloc segur
 

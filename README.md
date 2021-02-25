@@ -40,6 +40,7 @@ Crea a Kraken API i guarda les claus
 4. Apunta la API al fitxer de configuració
 5. Guarda-la en un lloc segur
 
+```
 # vim config/config.json 
 {
     "APP_PORT_HTTPS": "XXXX",
@@ -55,6 +56,9 @@ Crea a Kraken API i guarda les claus
         "API_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     }
 }
+```
+
+Ves a tradingview.com i configura un missatge i que faci un post al bot
 
 ## Crea el servie de l'aplicació amb PM2
 ```

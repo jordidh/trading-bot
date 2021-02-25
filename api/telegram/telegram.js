@@ -6,7 +6,6 @@
 var nconf = require('nconf')
 var logger = require('../logger')
 const TeleBot = require('telebot')
-var utils = require('../../helpers/utils/utils')
 var database = require('../database/database')
 var kraken = require('../exchanges/kraken/apis')
 
@@ -91,7 +90,7 @@ bot.on(BUTTONS.start.command, async (msg) => {
             [BUTTONS.logs.label, BUTTONS.bot.label],
             [BUTTONS.balance.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + `👋 ` + await utils.telegram_greetings() + ` ` + first_name + TEXT.wellcome.label + `</b>`, { replyMarkup, parseMode })
+        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name + TEXT.wellcome.label + `</b>`, { replyMarkup, parseMode })
     }
 });
 

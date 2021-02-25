@@ -3,12 +3,12 @@
 /**
  * Module dependencies
  */
-var path = require('path')
-var compression = require('compression')
-var bodyParser = require('body-parser')
-var cors = require('cors')
-var utils = require('../helpers/utils/utils')
-var database = require('../api/database/database')
+var path = require('path');
+var compression = require('compression');
+var bodyParser = require('body-parser');
+var cors = require('cors');
+var database = require('../api/database/database');
+var nconf = require('nconf');
 
 /**
  * Package Functions
@@ -16,7 +16,8 @@ var database = require('../api/database/database')
 module.exports = function (app) {
 
   // Carga fichero config.json
-  utils.LoadConfig()
+  nconf.file('config', path.join(__dirname, '../config/config.json'));
+  nconf.load();
 
   // Carga tablas de base de datos
   database.CheckDatabaseTables()

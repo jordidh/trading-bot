@@ -6,7 +6,7 @@
 var nconf = require('nconf')
 const ngrok = require('ngrok')
 var logger = require('./logger')
-var database = require('../api/database')
+var database = require('../api/database/database')
 
 /**
  * Package Functions

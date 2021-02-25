@@ -8,7 +8,7 @@ var compression = require('compression')
 var bodyParser = require('body-parser')
 var cors = require('cors')
 var utils = require('../helpers/utils/utils')
-var database = require('../api/database')
+var database = require('../api/database/database')
 
 /**
  * Package Functions

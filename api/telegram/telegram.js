@@ -7,7 +7,7 @@ var nconf = require('nconf')
 var logger = require('../logger')
 const TeleBot = require('telebot')
 var utils = require('../../helpers/utils/utils')
-var database = require('../database')
+var database = require('../database/database')
 var kraken = require('../exchanges/kraken/apis')
 
 /**

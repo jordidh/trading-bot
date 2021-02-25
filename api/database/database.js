@@ -4,8 +4,8 @@
  * Module dependencies
  */
 var nconf = require('nconf')
-const logger = require('./logger')
-const sqlite = require("../packages/sqlite3-await-async/sqlite3-await-async")
+const logger = require('../logger')
+const sqlite = require("./sqlite3-await-async")
 var moment = require('moment');
 const { ConsoleTransportOptions } = require('winston/lib/winston/transports');
 

@@ -6,7 +6,7 @@
 var path = require('path')
 var nconf = require('nconf')
 const logger = require('../api/logger')
-var database = require('../api/database')
+var database = require('../api/database/database')
 const moment = require('moment');
 const kraken = require('../api/exchanges/kraken/apis')
 

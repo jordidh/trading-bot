@@ -19,17 +19,17 @@ module.exports = function (app) {
   nconf.file('config', path.join(__dirname, '../config/config.json'));
   nconf.load();
 
-  // Carga tablas de base de datos
-  database.CheckDatabaseTables()
+  // Obre la BD, crea les taules si no eixsteixen i omple amb dades inicials
+  database.CheckDatabaseTables();
 
   // Módulo Express
-  app.use(compression())
-  app.use(bodyParser.json({ limit: '50mb' }))
-  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
-  app.use(cors())
+  app.use(compression());
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+  app.use(cors());
 
   // Middleware Express
   app.use(function (req, res, next) {
-    next()
+    next();
   });
 }

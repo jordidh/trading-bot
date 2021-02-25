@@ -104,4 +104,4 @@ dist
 .tern-port
 
 config/config.json
-certs/certs/
+config/certs/certs/

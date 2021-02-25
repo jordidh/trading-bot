@@ -7,7 +7,7 @@ var nconf = require('nconf')
 var app = require('../app')
 var debug = require('debug')(nconf.get("APP") + ':server')
 var https = require('https')
-var certs = require('../certs/certs')
+var certs = require('../config/certs/certs')
 var logger = require('../api/logger')
 
 /**

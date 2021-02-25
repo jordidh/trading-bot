@@ -11,7 +11,9 @@ const constants = require('./constants');
 const { constant } = require('async');
 
 /**
- * Package Functions
+ * Get account balance
+ * URL: https://api.kraken.com/0/private/Balance
+ * Result: array of asset names and balance amount
  */
 exports.getBalance = async function () {
     try {
@@ -51,30 +53,75 @@ exports.getBalance = async function () {
     }
 }
 
-exports.getPriceTicker = async function (asset) {
-    let pair = getTicker(asset);
-    console.log("ticker = " + pair);
-    let coinname = getCoinName(asset)
-    console.log("coiname = " + coinname);
-    let priceData = await krakenAPI.api('Ticker', { pair: pair });
-    return convertPriceData(priceData, pair);
-};
-
-exports.addOrder = async function () {
-    var vol = await krakenAPI.api('Ticker', { pair: 'XXBTZEUR' })
-    console.log(funds / vol.result['XXBTZEUR'].a[0])
-
+/**
+ * Funció per crear ordres de compra o venda
+ * Veure https://www.kraken.com/features/api
+ * @param {*} pair : crypto + moneda  Ex: 'XBTEUR'
+ * @param {*} volume : volum que es vol comprar (es calcula amb els fons disponibles menys un 1% i dividit pel valor actual de la crypto)
+ * @param {*} action : 'buy' / 'sell'
+ * 
+ * Retorna un objecte json amb l'estructura: { "error": [], "result": {}}
+ */
+exports.addOrder = async function (pair, volume, action) {
     try {
+        // Compra de la cripto
         var msg = await krakenAPI.api('AddOrder',
             {
-                pair: 'xbteur',
-                type: 'buy',
+                pair: pair,
+                type: action,
                 ordertype: 'market',
-                volume: (funds / vol.result['XXBTZEUR'].a[0])
-            })
-        console.log(msg)
+                volume: volume
+            });
+        console.log(msg);
+        return msg;
     } catch (err) {
-        console.log(err)
+        console.log(err);
+        return { "error" : [ err.message ], "result" : {} };
+    }
+}
+
+/**
+ * Funció per convertir els fons que es volen invertir a volum de cripto
+ * Es necessari abans de cridar a la funció addOrder
+ * La crida a kraken és del tipus: https://api.kraken.com/0/public/Ticker?pair=XBTEUR
+ * Amb el que retorna la crida, per aconseguir el volum de crypto, 
+ * s'agafa el valor de la crypto y es divideix pels fons a invertir
+ * Veure https://www.kraken.com/features/api
+ * @param {*} pair  : crypto + moneda  Ex: 'XBTEUR'
+ * @param {*} funds : fons que es volen invertir (s'aconsella restar-li un 1% abans de passar-ho a la funció per descomptar la comissió del exchange)
+ * 
+ * Retorna -1 si hi ha error i el volum (un número >= 0) si va bé
+ */
+exports.getVolumeFromFunds = async function (pair, funds) {
+    try {
+        // Càlcul del volum de cripto que es vol comprar
+        // Kraken retorna un objecte:
+        //{
+        //    "error": [],
+        //    "result": {
+        //        "XXBTZEUR": {
+        //            a: [ '41193.40000', '1', '1.000' ],
+        //            b: [ '41193.30000', '2', '2.000' ],
+        //            c: [ '41194.30000', '0.10000000' ],
+        //            v: [ '4019.56938193', '5793.50042560' ],
+        //            p: [ '41371.13767', '41107.71138' ],
+        //            t: [ 43719, 64168 ],
+        //            l: [ '39912.00000', '39610.80000' ],
+        //            h: [ '42515.10000', '42515.10000' ],
+        //            o: '40907.50000'                  
+        //        }
+        //    }
+        //}
+        // Ens quedem amb result.XXBTZEUR.a[0] on a = ask array(<price>, <whole lot volume>, <lot volume>),
+        // Nota: XXBTZEUR = X + crypto + Z + moneda
+        var cryptoValue = await krakenAPI.api('Ticker', { pair: pair });
+        console.log("kraken Ticker = " + cryptoValue);
+        var volume = funds / parseFloat(cryptoValue.result[Object.keys(arr.result)[0]].a[0]);
+        console.log("volume = " + volume);
+        return volume;
+    } catch (err) {
+        console.log(err);
+        return -1;
     }
 }
 

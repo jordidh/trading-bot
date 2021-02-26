@@ -3,12 +3,13 @@
 /**
  * Module dependencies
  */
-var path = require('path')
-var nconf = require('nconf')
-const logger = require('../api/logger')
-var database = require('../api/database/database')
+var path = require('path');
+var nconf = require('nconf');
+const logger = require('../api/logger');
+var database = require('../api/database/database');
 const moment = require('moment');
-const kraken = require('../api/exchanges/kraken/apis')
+const kraken = require('../api/exchanges/kraken/apis');
+const tradingControl = require('../api/tradingControl');
 
 /**
  * Package Functions
@@ -22,32 +23,43 @@ exports.Get = async function (req, res) {
  * Funció que rep l'ordre de vendre o comprar una criptomoneda
  * Informa per telegram de la recepció de l'ordre
  * Laidea es que s'envii des del TrandingView
- * @param {*} req : req.body ha de contenir { "action": "BUY"/"SELL", "pair": "XBTEUR" }  
+ * @param {*} req : req.body ha de contenir { "action": "buy"/"sell", "pair": "XBTEUR" }  
  *                  action: comprar o vendre
  *                  pair: el que es comprarà i amb quina modeda separat per un "/"
  * @param {*} res 
+ * 
+ * Retorna un objecte del tipus: { "error" : [], "result" : { "descr" : action + " " + volume + " " + pair + " @ market", "txid" : [ "OAVY7T-MV5VK-KHDF5X" ] } }
  */
 exports.Post = async function (req, res) {
     // Validem les dades rebudes
     if (typeof req.body === "undefined") {
-        return res.status(400).json({ message: "request body can not be undefined" });
+        return res.status(400).json({ error: [ "request body can not be undefined" ] });
     }
     if (req.body === null) {
-        return res.status(400).json({ message: "request body can not be null" });
+        return res.status(400).json({ error: [ "request body can not be null" ] });
     }
     if (Object.keys(req.body).length <= 0) {
-        return res.status(400).json({ message: "request body can not be empty" });
+        return res.status(400).json({ error: [ "request body can not be empty" ] });
     }
-    if (!req.body.hasOwnProperty(action)) {
-        return res.status(400).json({ message: "request body must have property \"action\"" });
+    if (!req.body.hasOwnProperty("action")) {
+        return res.status(400).json({ error: [ "request body must have property \"action\"" ] });
     }
-    if (req.body.action != "BUY" && req.body.action != "SELL") {
-        return res.status(400).json({ message: "request body property \"action\" only accepts values \"BUY\" or \"SELL\"" });
+    if (req.body.action != "buy" && req.body.action != "sell") {
+        return res.status(400).json({ error: [ "request body property \"action\" only accepts values \"buy\" or \"sell\"" ] });
     }
-    if (!req.body.hasOwnProperty(pair)) {
-        return res.status(400).json({ message: "request body must have property \"pair\"" });
+    if (!req.body.hasOwnProperty("pair")) {
+        return res.status(400).json({ error: [ "request body must have property \"pair\"" ] });
     }
 
+    let addOrderResult = await tradingControl(kraken, req.body.action, req.body.pair);
+
+    if (addOrderResult.error && Array.isArray(addOrderResult) && addOrderResult.length > 0) {
+        res.status(500).json(addOrderResult);
+    } else {
+        res.status(200).json(addOrderResult);
+    }
+
+    /*
     try {
         if (req.body.action === "BUY") {
             // Si estem comprant hem de saber si tenim prous fons al kraken i quina és la juguesca màxima
@@ -83,4 +95,6 @@ exports.Post = async function (req, res) {
         logger.error(e);
         return res.status(500).json({ message: "exception: " + e.message });
     }
+    */
 };
+

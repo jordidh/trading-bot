@@ -3,12 +3,12 @@
 /**
  * Module dependencies
  */
-var nconf = require('nconf')
-const logger = require('../../logger')
-const KrakenClient = require('kraken-api')
-const krakenAPI = new KrakenClient(nconf.get("EXCHANGE_KRAKEN").API_KEY, nconf.get("EXCHANGE_KRAKEN").API_SECRET)
-const constants = require('./constants');
-const { constant } = require('async');
+//var nconf = require('nconf')
+//const logger = require('../../logger')
+//const KrakenClient = require('kraken-api')
+//const krakenAPI = new KrakenClient(nconf.get("EXCHANGE_KRAKEN").API_KEY, nconf.get("EXCHANGE_KRAKEN").API_SECRET)
+//const constants = require('./constants');
+//const { constant } = require('async');
 
 /**
  * Get account balance
@@ -29,7 +29,7 @@ exports.getBalance = async function () {
                 if (pair) {
                     //console.log("Ticker = " + pair)
                     let priceData = await krakenAPI.api('Ticker', { pair: pair })
-                    current_price = parseFloat((convertPriceData(priceData, pair)).askPrice).toFixed(2)
+                    current_price = parseFloat(Object.entries(priceData.result)[i][1]).toFixed(2)
                     //console.log("Price = " + current_price)
                 }
                 let coinname = getCoinName(asset)
@@ -68,16 +68,17 @@ exports.addOrder = async function (pair, volume, action) {
         // Retorna una cosa del tipus:
         // Array ( [error] => Array ( )
         //         [result] => Array (
-        //              [descr] => Array ( [order] => sell 1.12300000 XBTUSD @ limit 120.00000 )
+        //              [descr] => Array ( [order] => buy 2.00000000 XBTEUR @ market )
         //              [txid] => Array ( [0] => OAVY7T-MV5VK-KHDF5X )
         //         )
         //    )
-        var msg = await krakenAPI.api('AddOrder', {
-                pair: pair,
-                type: action,
-                ordertype: 'market',
-                volume: volume
-            });
+        var msg = {
+            "error" : [],
+            "result" : {
+                "descr" : [ { "order" : action + " " + volume + " " + pair + " @ market" } ],
+                "txid" : [ "OAVY7T-MV5VK-KHDF5X" ]
+            }
+        };
         console.log(msg);
         return msg;
     } catch (err) {
@@ -116,8 +117,22 @@ exports.getTicker = async function (pair) {
         //}
         // Ens quedem amb result.XXBTZEUR.a[0] on a = ask array(<price>, <whole lot volume>, <lot volume>),
         // Nota: XXBTZEUR = X + crypto + Z + moneda
-        var cryptoValue = await krakenAPI.api('Ticker', { pair: pair });
-        console.log("kraken Ticker = " + cryptoValue);
+        var cryptoValue = {
+            "error": [],
+            "result": {
+                "XXBTZEUR": {
+                    a: [ '41193.40000', '1', '1.000' ],
+                    b: [ '41193.30000', '2', '2.000' ],
+                    c: [ '41194.30000', '0.10000000' ],
+                    v: [ '4019.56938193', '5793.50042560' ],
+                    p: [ '41371.13767', '41107.71138' ],
+                    t: [ 43719, 64168 ],
+                    l: [ '39912.00000', '39610.80000' ],
+                    h: [ '42515.10000', '42515.10000' ],
+                    o: '40907.50000'                  
+                }
+            }
+        };
         //var volume = funds / parseFloat(cryptoValue.result[Object.keys(arr.result)[0]].a[0]);
         //console.log("volume = " + volume);
         //return volume;
@@ -128,45 +143,7 @@ exports.getTicker = async function (pair) {
     }
 }
 
-exports.getAllCoins = async function () {
-    var data = constants.coinname
-    let array = []
-    if (Object.entries(data).length > 0) {
-        for (var i = 0; i < Object.entries(data).length; i++) {
-            let coin = Object.entries(data)[i][0]
-            let description = Object.entries(data)[i][1]
-            var object = {}
-            object.coin = coin
-            object.description = description
-            array.push(object)
-        }
-    }
-    return array
-}
 
-/**
- * Local Functions
- */
-
-function convertPriceData(priceData, ticker) {
-    let aData = priceData.result[ticker];
-    let data = {
-        askPrice: parseFloat(aData.a[0]),
-        bidPrice: parseFloat(aData.b[0]),
-        lastTradeClosedPrice: parseFloat(aData.c[0]),
-        volumeToday: parseFloat(aData.v[0]),
-        volume24H: parseFloat(aData.v[1]),
-        volumeWeightedAveragePriceToday: parseFloat(aData.p[0]),
-        volumeWeightedAveragePrice24H: parseFloat(aData.p[1]),
-        numberOfTradesToday: parseFloat(aData.t[0]),
-        numberOfTrades24H: parseFloat(aData.t[1]),
-        lowPrice: parseFloat(aData.l[0]),
-        highPrice: parseFloat(aData.h[0]),
-        openPrice: parseFloat(aData.o),
-        percentageIncrease: (parseFloat(aData.c[0]) - parseFloat(aData.o)) / parseFloat(aData.o) * 100
-    };
-    return data
-}
 
 function getCoinName(asset) {
     switch (asset) {

@@ -104,7 +104,7 @@ bot.on(BUTTONS.start.command, async (msg) => {
     let first_name = msg.from.first_name
     let parseMode = 'html';
     // Validación usuario
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         // Menú Principal
         let replyMarkup = bot.keyboard([
             [BUTTONS.info.label, BUTTONS.balance.label],
@@ -120,8 +120,9 @@ bot.on(BUTTONS.info.command, async (msg) => {
     let id = msg.from.id
     let first_name = msg.from.first_name
     let parseMode = 'html';
+
     // Validación usuario
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         // Menú Principal
         let replyMarkup = bot.keyboard([
             [BUTTONS.info.label, BUTTONS.balance.label],
@@ -138,7 +139,7 @@ bot.on(BUTTONS.balance.command, async (msg) => {
     let first_name = msg.from.first_name
     let parseMode = 'html';
     // Validación usuario
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         // Muestra logs usuario
         var data = await kraken.getBalance()
         // Menú Principal
@@ -158,7 +159,7 @@ bot.on(BUTTONS.logs.command, async (msg) => {
     let first_name = msg.from.first_name
     let parseMode = 'html';
     // Validación usuario
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         // Muestra logs usuario
         var logs = await database.arrayGetUserLogs(id)
         // Menú Principal
@@ -178,7 +179,7 @@ bot.on(BUTTONS.bot.command, async (msg) => {
     let parseMode = 'html'
     let replyMarkup
     // Validación usuario
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         // Comprobaremos el estado del Bot
         var status = await database.GetStatusBot()
         if (status.status === 1) {
@@ -200,7 +201,7 @@ bot.on(BUTTONS.buy.command, async (msg) => {
     let id = msg.from.id;
     
     // Validació usuari
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         // Recuperem la informació del missatge rebut
         let msgLanguageCode = msg.from.language_code; //ca
         let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
@@ -229,7 +230,7 @@ bot.on(BUTTONS.buy_test.command, async (msg) => {
     let id = msg.from.id;
     
     // Validació usuari
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         // Recuperem la informació del missatge rebut
         let msgLanguageCode = msg.from.language_code; //ca
         let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
@@ -259,7 +260,7 @@ bot.on('callbackQuery', async (msg) => {
     let first_name = msg.from.first_name
     let parseMode = 'html';
     // Validación usuario
-    if (await database.boolCheckTelegramUser(id)) {
+    if (id === Number(config.TELEGRAM.USER_ID)) {
         let updated = null
         // Actualizaremos el estado del Bot
         switch (msg.data) {

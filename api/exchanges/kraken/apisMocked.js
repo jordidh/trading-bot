@@ -1,14 +1,41 @@
 "use strict";
 
 /**
- * Module dependencies
+ * Public properties
  */
-//var nconf = require('nconf')
-//const logger = require('../../logger')
-//const KrakenClient = require('kraken-api')
-//const krakenAPI = new KrakenClient(nconf.get("EXCHANGE_KRAKEN").API_KEY, nconf.get("EXCHANGE_KRAKEN").API_SECRET)
-//const constants = require('./constants');
-//const { constant } = require('async');
+var m_balance = {
+    "error" : [],
+    "result" : {
+        "ZUSD" : [3415.8014],
+        "ZEUR" : [155.5649],
+        "XXBT" : [149.9688412800],
+        "XXRP" : [499889.51600000]
+    }
+};
+exports.setBalance = function(value) {
+    m_balance = value;
+}
+
+var m_cryptoValue = {
+    "error": [],
+    "result": {
+        "XXBTZEUR": {
+            a: [ '41193.40000', '1', '1.000' ],
+            b: [ '41193.30000', '2', '2.000' ],
+            c: [ '41194.30000', '0.10000000' ],
+            v: [ '4019.56938193', '5793.50042560' ],
+            p: [ '41371.13767', '41107.71138' ],
+            t: [ 43719, 64168 ],
+            l: [ '39912.00000', '39610.80000' ],
+            h: [ '42515.10000', '42515.10000' ],
+            o: '40907.50000'                  
+        }
+    }
+};
+exports.setCryptoValue = function(value) {
+    m_cryptoValue = value;
+}
+
 
 /**
  * Get account balance
@@ -48,8 +75,68 @@ exports.getBalance = async function () {
         }
     }
     catch (err) {
-        logger.error(err.message)
         return err.message
+    }
+}
+
+/**
+ * Get account funds in a specific currency
+ * URL: https://api.kraken.com/0/private/Balance
+ * Result: { 
+ *   "error" : [ float of funds available ],
+ *   "result" : { .. }
+ *   "funds": 0
+ * }
+ * @param {*} currency : "ZEUR" / "ZUSD"
+ */
+exports.getFunds = async function (currency) {
+    try {
+        // Si s'ha retornat un error
+        if (m_balance && m_balance.error && Array.isArray(m_balance.error) && m_balance.error.length > 0) {
+            return { 
+                "error" : [ m_balance.error[0] ], 
+                "result" : { 
+                    "funds" : 0
+                }
+            };
+        }
+
+        // Si no hi ha fons
+        if (typeof m_balance === "undefined" || m_balance === null || 
+            typeof m_balance.result === "undefined" || m_balance.result === null ||
+            Object.entries(m_balance.result).length === 0) {
+
+            return { 
+                "error" : [ ], 
+                "result" : { 
+                    "funds" : 0
+                }
+            };
+        }
+
+        // Recuperem els fons
+        let funds = 0;
+        for (var i = 0; i < Object.entries(m_balance.result).length; i++) {
+            let asset = Object.entries(m_balance.result)[i][0];
+            if (asset === currency) {
+                funds = parseFloat(Object.entries(m_balance.result)[i][1]).toFixed(2);
+            }
+        }
+
+        return { 
+            "error" : [ ], 
+            "result" : {
+                "funds" : parseFloat(funds)
+            }
+        };
+    }
+    catch (err) {
+        return { 
+            "error" : [ "Exception getting funds " + err.message ], 
+            "result" : {
+                "funds" : 0
+            }
+        };
     }
 }
 
@@ -97,160 +184,9 @@ exports.addOrder = async function (pair, volume, action) {
  */
 exports.getTicker = async function (pair) {
     try {
-        // Càlcul del volum de cripto que es vol comprar
-        // Kraken retorna un objecte:
-        //{
-        //    "error": [],
-        //    "result": {
-        //        "XXBTZEUR": {
-        //            a: [ '41193.40000', '1', '1.000' ],
-        //            b: [ '41193.30000', '2', '2.000' ],
-        //            c: [ '41194.30000', '0.10000000' ],
-        //            v: [ '4019.56938193', '5793.50042560' ],
-        //            p: [ '41371.13767', '41107.71138' ],
-        //            t: [ 43719, 64168 ],
-        //            l: [ '39912.00000', '39610.80000' ],
-        //            h: [ '42515.10000', '42515.10000' ],
-        //            o: '40907.50000'                  
-        //        }
-        //    }
-        //}
-        // Ens quedem amb result.XXBTZEUR.a[0] on a = ask array(<price>, <whole lot volume>, <lot volume>),
-        // Nota: XXBTZEUR = X + crypto + Z + moneda
-        var cryptoValue = {
-            "error": [],
-            "result": {
-                "XXBTZEUR": {
-                    a: [ '41193.40000', '1', '1.000' ],
-                    b: [ '41193.30000', '2', '2.000' ],
-                    c: [ '41194.30000', '0.10000000' ],
-                    v: [ '4019.56938193', '5793.50042560' ],
-                    p: [ '41371.13767', '41107.71138' ],
-                    t: [ 43719, 64168 ],
-                    l: [ '39912.00000', '39610.80000' ],
-                    h: [ '42515.10000', '42515.10000' ],
-                    o: '40907.50000'                  
-                }
-            }
-        };
-        //var volume = funds / parseFloat(cryptoValue.result[Object.keys(arr.result)[0]].a[0]);
-        //console.log("volume = " + volume);
-        //return volume;
-        return cryptoValue;
+        return m_cryptoValue;
     } catch (err) {
         console.log(err);
         return { "error" : [ err.message ] };
-    }
-}
-
-
-
-function getCoinName(asset) {
-    switch (asset) {
-        case 'ZEUR':
-            return constants.coinname.ZEUR;
-        case 'XXBT':
-            return constants.coinname.XBT;
-        case 'XETH':
-            return constants.coinname.ETH;
-        case 'REP':
-            return constants.coinname.REP;
-        case 'REPV2':
-            return constants.coinname.REPV2;
-        case 'BAT':
-            return constants.coinname.BAT;
-        case 'BCH':
-            return constants.coinname.BCH;
-        case 'ADA':
-            return constants.coinname.ADA;
-        case 'ATOM':
-            return constants.coinname.ATOM;
-        case 'DASH':
-            return constants.coinname.DASH;
-        case 'EOS':
-            return constants.coinname.EOS;
-        case 'ETC':
-            return constants.coinname.ETC;
-        case 'GNO':
-            return constants.coinname.GNO;
-        case 'ICX':
-            return constants.coinname.ICX;
-        case 'LTC':
-            return constants.coinname.LTC;
-        case 'XMR':
-            return constants.coinname.XMR;
-        case 'QTUM':
-            return constants.coinname.QTUM;
-        case 'XRP':
-            return constants.coinname.XRP;
-        case 'XLM':
-            return constants.coinname.XLM;
-        case 'USDT':
-            return constants.coinname.USDT;
-        case 'XTZ':
-            return constants.coinname.XTZ;
-        case 'WAVES':
-            return constants.coinname.WAVES;
-        case 'ZEC':
-            return constants.coinname.ZEC;
-        case 'KSM':
-            return constants.coinname.KSM;
-        case 'GRT':
-            return constants.coinname.GRT;
-    }
-};
-
-function getTicker(asset) {
-    switch (asset) {
-        case 'ZEURT':
-            return constants.pairs.ZEUR;
-        case 'XXBT':
-            return constants.pairs.XBT;
-        case 'XETH':
-            return constants.pairs.ETH;
-        case 'REP':
-            return constants.pairs.REP;
-        case 'REPV2':
-            return constants.pairs.REP;
-        case 'BAT':
-            return constants.pairs.BAT;
-        case 'BCH':
-            return constants.pairs.BCH;
-        case 'ADA':
-            return constants.pairs.ADA;
-        case 'ATOM':
-            return constants.pairs.ATOM;
-        case 'DASH':
-            return constants.pairs.DASH;
-        case 'EOS':
-            return constants.pairs.EOS;
-        case 'ETC':
-            return constants.pairs.ETC;
-        case 'GNO':
-            return constants.pairs.GNO;
-        case 'ICX':
-            return constants.pairs.ICX;
-        case 'LTC':
-            return constants.pairs.LTC;
-        case 'XMR':
-            return constants.pairs.XMR;
-        case 'QTUM':
-            return constants.pairs.QTUM;
-        case 'XRP':
-            return constants.pairs.XRP;
-        case 'XLM':
-            return constants.pairs.XLM;
-        case 'USDT':
-            return constants.pairs.USDT;
-        case 'XTZ':
-            return constants.pairs.XTZ;
-        case 'WAVES':
-            return constants.pairs.WAVES;
-        case 'ZEC':
-            return constants.pairs.ZEC;
-        case 'KSM':
-            return constants.pairs.KSM;
-        case 'GRT':
-            return constants.pairs.GRT;
     }
 }

@@ -8,46 +8,67 @@ var logger = require('../logger')
 const TeleBot = require('telebot')
 var database = require('../database/database')
 var kraken = require('../exchanges/kraken/apis')
+let tradingControl = require('../tradingControl');
+
+const TEST_MODE = true;
+const REAL_MODE = false;
 
 /**
  * Package Functions
  */
 const BUTTONS = {
     start: {
-        label: '🏁 INICIO!',
+        label: '🏁 INICI!',
         command: '/start'
+    },
+    info: {
+        label: '🏁 INFO!',
+        command: '/info'
     },
     balance: {
         label: '💰 BALANCE',
-        command: '/menu_balance'
+        command: '/balance'
     },
     logs: {
         label: '📊 LOGS',
-        command: '/menu_logs'
+        command: '/logs'
     },
     buy: {
-        label: '📉 COMPRAR',
-        command: '/menu_buy'
+        label: '📉 COMPRA',
+        command: '/buy'
     },
     sell: {
-        label: '📈 VENDER',
-        command: '/menu_sell'
+        label: '📈 VEN',
+        command: '/sell'
+    },
+    buy_test: {
+        label: '📉 COMPRA TEST',
+        command: '/buy_test'
+    },
+    sell_test: {
+        label: '📈 VEN TEST',
+        command: '/sell_test'
     },
     bot: {
         label: '⚙️ BOT',
-        command: '/menu_trading_bot'
+        command: '/trading_bot'
     },
     bot_activate: {
-        label: '/menu_trading_bot_activate'
+        label: '/activate_bot'
     },
     bot_deactivate: {
-        label: '/menu_trading_bot_deactivate'
+        label: '/deactivate_bot'
     }
 };
 
 const TEXT = {
     wellcome: {
-        label: `,\n\nBienvenido al menú principal de Bot!`
+        label: `, Comandes disponibles:\n\n` + 
+               `<b>\/balance</b>` +
+               `<b>\/buy [pair]</b>, Ex: /buy XBTEUR, /buy XBTUSD, /buy ETHEUR, /buy ADAEUR, /buy USDTEUR\n` +
+               `<b>\/buy_test [pair]</b>, Ex: /buy_test XBTEUR\n` +
+               `<b>\/sell [pair]</b>, Ex: /sell XBTEUR\n` +
+               `<b>\/sell_test [pair]</b>, Ex: /sell_test XBTEUR\n`
     },
     activate_bot: {
         label: `🟢 ACTIVAR BOT`
@@ -86,11 +107,28 @@ bot.on(BUTTONS.start.command, async (msg) => {
     if (await database.boolCheckTelegramUser(id)) {
         // Menú Principal
         let replyMarkup = bot.keyboard([
+            [BUTTONS.info.label, BUTTONS.balance.label],
             [BUTTONS.buy.label, BUTTONS.sell.label],
-            [BUTTONS.logs.label, BUTTONS.bot.label],
-            [BUTTONS.balance.label]
+            [BUTTONS.logs.label, BUTTONS.bot.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name + TEXT.wellcome.label + `</b>`, { replyMarkup, parseMode })
+        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.wellcome.label, { replyMarkup, parseMode })
+    }
+});
+
+// Info
+bot.on(BUTTONS.info.command, async (msg) => {
+    let id = msg.from.id
+    let first_name = msg.from.first_name
+    let parseMode = 'html';
+    // Validación usuario
+    if (await database.boolCheckTelegramUser(id)) {
+        // Menú Principal
+        let replyMarkup = bot.keyboard([
+            [BUTTONS.info.label, BUTTONS.balance.label],
+            [BUTTONS.buy.label, BUTTONS.sell.label],
+            [BUTTONS.logs.label, BUTTONS.bot.label]
+        ], { resize: true });
+        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.wellcome.label, { replyMarkup, parseMode })
     }
 });
 
@@ -105,9 +143,9 @@ bot.on(BUTTONS.balance.command, async (msg) => {
         var data = await kraken.getBalance()
         // Menú Principal
         let replyMarkup = bot.keyboard([
+            [BUTTONS.info.label, BUTTONS.balance.label],
             [BUTTONS.buy.label, BUTTONS.sell.label],
-            [BUTTONS.logs.label, BUTTONS.bot.label],
-            [BUTTONS.balance.label]
+            [BUTTONS.logs.label, BUTTONS.bot.label]
         ], { resize: true });
         return bot.sendMessage(id, `<b>` + data + `</b>`, { replyMarkup, parseMode })
         console.log(data)
@@ -125,9 +163,9 @@ bot.on(BUTTONS.logs.command, async (msg) => {
         var logs = await database.arrayGetUserLogs(id)
         // Menú Principal
         let replyMarkup = bot.keyboard([
+            [BUTTONS.info.label, BUTTONS.balance.label],
             [BUTTONS.buy.label, BUTTONS.sell.label],
-            [BUTTONS.logs.label, BUTTONS.bot.label],
-            [BUTTONS.balance.label]
+            [BUTTONS.logs.label, BUTTONS.bot.label]
         ], { resize: true });
         return bot.sendMessage(id, `<b>` + logs + `</b>`, { replyMarkup, parseMode })
     }
@@ -159,28 +197,61 @@ bot.on(BUTTONS.bot.command, async (msg) => {
 
 // buy
 bot.on(BUTTONS.buy.command, async (msg) => {
-    let id = msg.from.id
-    let first_name = msg.from.first_name
-    let parseMode = 'html'
-    let replyMarkup
-    // Validación usuario
+    let id = msg.from.id;
+    
+    // Validació usuari
     if (await database.boolCheckTelegramUser(id)) {
-        var data = await kraken.getAllCoins()
-        if (data) {
-            var buy = '['
-            for (var i = 0; i < data.length; i++) {
-                buy += `bot.inlineButton( '` + data[i].coin + `', { callback: '' }),`
-            }
-            buy += ']'
+        // Recuperem la informació del missatge rebut
+        let msgLanguageCode = msg.from.language_code; //ca
+        let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
+        let parseMode = 'html';
 
-            replyMarkup = bot.inlineKeyboard([
-                [bot.inlineButton('1', { callback: '/1' })],
-                [bot.inlineButton('2', { callback: '/2' })]
-            ]);
+        // Si hi ha un error en el missatge rebut sortim
+        if (msgWords.length != 2) {
+            return bot.sendMessage(id, 
+                "Error, la crida a la comanda " + BUTTONS.buy.command + " ha de tenir un paràmetre amb el pair, ex: buy XBTEUR",
+                { parseMode, parseMode }
+            );
         }
-        return bot.sendMessage(id, `BUY`, { replyMarkup, parseMode });
+
+        // Tot correcte, creem l'ordre
+        let pair = msgWords[1]; //"XBTEUR"
+        let response = await tradingControl.addOrder(kraken, "buy", pair, REAL_MODE);
+        return bot.sendMessage(id, 
+            `result = ` + JSON.stringify(response),
+            { parseMode, parseMode }
+        );
     }
 })
+
+// buy test mode
+bot.on(BUTTONS.buy_test.command, async (msg) => {
+    let id = msg.from.id;
+    
+    // Validació usuari
+    if (await database.boolCheckTelegramUser(id)) {
+        // Recuperem la informació del missatge rebut
+        let msgLanguageCode = msg.from.language_code; //ca
+        let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
+        let parseMode = 'html';
+
+        // Si hi ha un error en el missatge rebut sortim
+        if (msgWords.length != 2) {
+            return bot.sendMessage(id, 
+                "Error, la crida a la comanda " + BUTTONS.buy_test.command + " ha de tenir un paràmetre amb el pair, ex: buy_test XBTEUR",
+                { parseMode, parseMode }
+            );
+        }
+
+        // Tot correcte, creem l'ordre
+        let pair = msgWords[1]; //"XBTEUR"
+        let response = await tradingControl.addOrder(kraken, "buy", pair, TEST_MODE);
+        return bot.sendMessage(id, 
+            `result = ` + JSON.stringify(response),
+            { parseMode, parseMode }
+        );
+    }
+});
 
 // All callbackQuery Bot
 bot.on('callbackQuery', async (msg) => {

@@ -17,7 +17,17 @@ const { constant } = require('async');
  */
 exports.getBalance = async function () {
     try {
-        let data = (await krakenAPI.api('Balance'))
+        // Recuperem el balanç de l'usuari
+        // Ens retorna una cosa com: { 
+        //   "error": [ "", "", ...], 
+        //   "result" : [
+        //                "ZUSD" : [3415.8014],
+        //                "ZEUR" : [155.5649],
+        //                "XXBT" : [149.9688412800],
+        //                "XXRP" : [499889.51600000],
+        //                ...
+        //   ]
+        let data = await krakenAPI.api('Balance');
         if (Object.entries(data.result).length > 0) {
             let result = ''
             let sum = []
@@ -50,6 +60,101 @@ exports.getBalance = async function () {
     catch (err) {
         logger.error(err.message)
         return err.message
+    }
+}
+
+/**
+ * Get account funds in a specific currency
+ * URL: https://api.kraken.com/0/private/Balance
+ * Result: { 
+ *   "error" : [ float of funds available ],
+ *   "result" : { .. }
+ *   "funds": 0
+ * }
+ * @param {*} currency : "ZEUR" / "ZUSD"
+ */
+exports.getFunds = async function (currency) {
+    try {
+        // Recuperem el balanç de l'usuari
+        // Ens retorna una cosa com: { 
+        //   "error": [ "", "", ...], 
+        //   "result" : [
+        //                "ZUSD" : [3415.8014],
+        //                "ZEUR" : [155.5649],
+        //                "XXBT" : [149.9688412800],
+        //                "XXRP" : [499889.51600000],
+        //                ...
+        //   ]
+        let balance = await krakenAPI.api('Balance');
+
+        // Si s'ha retornat un error
+        if (balance && balance.error && Array.isArray(balance.error) && balance.error.length > 0) {
+            logger.error("Error calling krakenAPI Balance: " + balance.error);
+            return { 
+                "error" : [ balance.error[0] ], 
+                "result" : { 
+                    "funds" : 0
+                }
+            };
+        }
+
+        // Si no hi ha fons
+        if (typeof balance === "undefined" || balance === null || 
+            typeof balance.result === "undefined" || balance.result === null ||
+            Object.entries(balance.result).length === 0) {
+
+            return { 
+                "error" : [ ], 
+                "result" : { 
+                    "funds" : 0
+                }
+            };
+        }
+
+        // Recuperem els fons
+        let funds = 0;
+        for (var i = 0; i < Object.entries(balance.result).length; i++) {
+            let asset = Object.entries(balance.result)[i][0];
+            if (asset === currency) {
+                funds = parseFloat(Object.entries(balance.result)[i][1]).toFixed(2);
+                /*
+                let asset_balance = parseFloat(Object.entries(balance.result)[i][1]).toFixed(2);
+                let pair = getTicker(asset);
+                let current_price = null
+                if (pair) {
+                    //console.log("Ticker = " + pair)
+                    let priceData = await krakenAPI.api('Ticker', { pair: pair })
+                    current_price = parseFloat((convertPriceData(priceData, pair)).askPrice).toFixed(2)
+                    //console.log("Price = " + current_price)
+                }
+                let coinname = getCoinName(asset)
+                //console.log("coiname = " + coinname)
+                let balance = parseFloat(current_price ? (current_price * asset_balance) : asset_balance).toFixed(2)
+                //console.log("balance = " + balance)
+                sum.push(balance)
+                result += coinname + '(' + asset + ')' + ': ' + balance + '€ ' + (current_price ? ' (' + current_price + '€)' : '') + '\n'
+                // Total balance
+                let total = sum.map(c => parseFloat(c)).reduce((a, b) => a + b, 0).toFixed(2)
+                result += '\nTotal balance: ' + total + ' €'
+                */
+            }
+        }
+
+        return { 
+            "error" : [ ], 
+            "result" : {
+                "funds" : funds
+            }
+        };
+    }
+    catch (err) {
+        logger.error(err.message)
+        return { 
+            "error" : [ "Exception getting funds " + err.message ], 
+            "result" : {
+                "funds" : 0
+            }
+        };
     }
 }
 

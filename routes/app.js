@@ -51,7 +51,7 @@ exports.Post = async function (req, res) {
         return res.status(400).json({ error: [ "request body must have property \"pair\"" ] });
     }
 
-    let addOrderResult = await tradingControl(kraken, req.body.action, req.body.pair);
+    let addOrderResult = await tradingControl.addOrder(kraken, req.body.action, req.body.pair, test = false);
 
     if (addOrderResult.error && Array.isArray(addOrderResult) && addOrderResult.length > 0) {
         res.status(500).json(addOrderResult);

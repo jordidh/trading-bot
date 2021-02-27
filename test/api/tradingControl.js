@@ -45,10 +45,10 @@ describe('Trading Control, addOrder', () =>  {
             "error" : []
         });
 
-        console.log(krakenMocked.balance);
+        //console.log(krakenMocked.balance);
 
         var orderAddedExpected = {
-            "error" : [ ],
+            "error" : [ "no funds to buy" ],
             "result" : {
                 "exchangePercentage": 1,
                 "funds": 0,

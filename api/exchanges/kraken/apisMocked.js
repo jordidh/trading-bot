@@ -166,10 +166,10 @@ exports.addOrder = async function (pair, volume, action) {
                 "txid" : [ "OAVY7T-MV5VK-KHDF5X" ]
             }
         };
-        console.log(msg);
+        //console.log(msg);
         return msg;
     } catch (err) {
-        console.log(err);
+        //console.log(err);
         return { "error" : [ err.message ], "result" : {} };
     }
 }
@@ -186,7 +186,7 @@ exports.getTicker = async function (pair) {
     try {
         return m_cryptoValue;
     } catch (err) {
-        console.log(err);
+        //console.log(err);
         return { "error" : [ err.message ] };
     }
 }

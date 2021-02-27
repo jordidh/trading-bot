@@ -38,7 +38,7 @@ exports.Post = async function (req, res) {
 
     let postId = uuidv1();
 
-    // Enviem missatge al telegram de l'usuari
+    // Enviem missatge al telegram de l'usuari per indicar que hem rebut un post
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
     logger.info(postId + `: Rebut POST des de ` + ip + ` amb les dades ` + JSON.stringify(req.body));
@@ -88,8 +88,10 @@ exports.Post = async function (req, res) {
         return res.status(400).json({ error: [ "request body must have property \"pair\"" ] });
     }
 
+    // Creem l'ordre
     let addOrderResult = await tradingControl.addOrder(kraken, req.body.action, req.body.pair, REAL_MODE);
 
+    // Retornem el resultat
     if (addOrderResult.error && Array.isArray(addOrderResult) && addOrderResult.length > 0) {
         logger.error(postId + ": Ordre creada amb error " + JSON.stringify(addOrderResult));
         await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb error " + JSON.stringify(addOrderResult));

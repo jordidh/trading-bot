@@ -43,21 +43,21 @@ const BUTTONS = {
     },
     buy_test: {
         label: '📉 COMPRA TEST',
-        command: '/buy_test'
+        command: '/buytest'
     },
     sell_test: {
         label: '📈 VEN TEST',
-        command: '/sell_test'
+        command: '/selltest'
     },
     bot: {
         label: '⚙️ BOT',
-        command: '/trading_bot'
+        command: '/bot'
     },
     bot_activate: {
-        label: '/activate_bot'
+        label: '/activatebot'
     },
     bot_deactivate: {
-        label: '/deactivate_bot'
+        label: '/deactivatebot'
     }
 };
 
@@ -66,9 +66,9 @@ const TEXT = {
         label: `, Comandes disponibles:\n\n` + 
                `<b>\/balance</b>` +
                `<b>\/buy [pair]</b>, Ex: /buy XBTEUR, /buy XBTUSD, /buy ETHEUR, /buy ADAEUR, /buy USDTEUR\n` +
-               `<b>\/buy_test [pair]</b>, Ex: /buy_test XBTEUR\n` +
+               `<b>\/buytest [pair]</b>, Ex: /buytest XBTEUR\n` +
                `<b>\/sell [pair]</b>, Ex: /sell XBTEUR\n` +
-               `<b>\/sell_test [pair]</b>, Ex: /sell_test XBTEUR\n`
+               `<b>\/selltest [pair]</b>, Ex: /selltest XBTEUR\n`
     },
     activate_bot: {
         label: `🟢 ACTIVAR BOT`

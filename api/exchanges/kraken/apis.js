@@ -117,26 +117,6 @@ exports.getFunds = async function (currency) {
             let asset = Object.entries(balance.result)[i][0];
             if (asset === currency) {
                 funds = parseFloat(Object.entries(balance.result)[i][1]).toFixed(2);
-                /*
-                let asset_balance = parseFloat(Object.entries(balance.result)[i][1]).toFixed(2);
-                let pair = getTicker(asset);
-                let current_price = null
-                if (pair) {
-                    //console.log("Ticker = " + pair)
-                    let priceData = await krakenAPI.api('Ticker', { pair: pair })
-                    current_price = parseFloat((convertPriceData(priceData, pair)).askPrice).toFixed(2)
-                    //console.log("Price = " + current_price)
-                }
-                let coinname = getCoinName(asset)
-                //console.log("coiname = " + coinname)
-                let balance = parseFloat(current_price ? (current_price * asset_balance) : asset_balance).toFixed(2)
-                //console.log("balance = " + balance)
-                sum.push(balance)
-                result += coinname + '(' + asset + ')' + ': ' + balance + '€ ' + (current_price ? ' (' + current_price + '€)' : '') + '\n'
-                // Total balance
-                let total = sum.map(c => parseFloat(c)).reduce((a, b) => a + b, 0).toFixed(2)
-                result += '\nTotal balance: ' + total + ' €'
-                */
             }
         }
 

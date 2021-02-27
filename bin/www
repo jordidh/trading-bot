@@ -14,8 +14,8 @@ var logger = require('../api/logger');
 /**
  * Get port from environment and store in Express.
  */
-var portHttp = normalizePort(config.APP_PORT_HTTP);
-app.set('portHttp', portHttp);
+var port = normalizePort(config.APP_PORT_HTTP);
+app.set('portHttp', port);
 //var portHttps = normalizePort(config.APP_PORT_HTTPS);
 //app.set('portHttps', portHttps);
 
@@ -28,7 +28,7 @@ var serverHttp = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-serverHttp.listen(portHttp)
+serverHttp.listen(port)
 serverHttp.on('error', onError)
 serverHttp.on('listening', onListeningHttp)
 

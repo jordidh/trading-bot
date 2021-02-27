@@ -3,13 +3,17 @@
 /**
  * Module dependencies
  */
-var path = require('path');
-var nconf = require('nconf');
 const logger = require('../api/logger');
-var database = require('../api/database/database');
 const moment = require('moment');
+const { v1: uuidv1 } = require('uuid');
 const kraken = require('../api/exchanges/kraken/apis');
 const tradingControl = require('../api/tradingControl');
+//const TeleBot = require('telebot')
+const telegramCommands = require('../api/telegram/commands');
+const config = require('../config/config');
+
+const TEST_MODE = true;
+const REAL_MODE = false;
 
 /**
  * Package Functions
@@ -31,70 +35,68 @@ exports.Get = async function (req, res) {
  * Retorna un objecte del tipus: { "error" : [], "result" : { "descr" : action + " " + volume + " " + pair + " @ market", "txid" : [ "OAVY7T-MV5VK-KHDF5X" ] } }
  */
 exports.Post = async function (req, res) {
+
+    let postId = uuidv1();
+
+    // Enviem missatge al telegram de l'usuari
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+    logger.info(postId + `: Rebut POST des de ` + ip + ` amb les dades ` + JSON.stringify(req.body));
+    await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, 
+        `Rebut POST des de ` + ip + ` amb les dades ` + JSON.stringify(req.body)
+    );
+
     // Validem les dades rebudes
     if (typeof req.body === "undefined") {
+        logger.info(postId + ": request body can not be undefined");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body can not be undefined");
         return res.status(400).json({ error: [ "request body can not be undefined" ] });
     }
     if (req.body === null) {
+        logger.info(postId + ": request body can not be null");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body can not be null");
         return res.status(400).json({ error: [ "request body can not be null" ] });
     }
     if (Object.keys(req.body).length <= 0) {
+        logger.info(postId + ": request body can not be empty");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body can not be empty");
         return res.status(400).json({ error: [ "request body can not be empty" ] });
     }
+    if (!req.body.hasOwnProperty("token")) {
+        logger.info(postId + ": request body must have property \"token\"");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"token\"");
+        return res.status(400).json({ error: [ "request body must have property \"token\"" ] });
+    }
+    if (req.body.token != config.APP_TOKEN) {
+        logger.info(postId + ": Token invalid");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Token invalid");
+        return res.status(400).json({ error: [ "Token invalid" ] });
+    }
     if (!req.body.hasOwnProperty("action")) {
+        logger.info(postId + ": request body must have property \"action\"");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"action\"");
         return res.status(400).json({ error: [ "request body must have property \"action\"" ] });
     }
     if (req.body.action != "buy" && req.body.action != "sell") {
+        logger.info(postId + ": request body property \"action\" only accepts values \"buy\" or \"sell\"");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body property \"action\" only accepts values \"buy\" or \"sell\"");
         return res.status(400).json({ error: [ "request body property \"action\" only accepts values \"buy\" or \"sell\"" ] });
     }
     if (!req.body.hasOwnProperty("pair")) {
+        logger.info(postId + ": request body must have property \"pair\"");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"pair\"");
         return res.status(400).json({ error: [ "request body must have property \"pair\"" ] });
     }
 
-    let addOrderResult = await tradingControl.addOrder(kraken, req.body.action, req.body.pair, test = false);
+    let addOrderResult = await tradingControl.addOrder(kraken, req.body.action, req.body.pair, REAL_MODE);
 
     if (addOrderResult.error && Array.isArray(addOrderResult) && addOrderResult.length > 0) {
+        logger.error(postId + ": Ordre creada amb error " + JSON.stringify(addOrderResult));
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb error " + JSON.stringify(addOrderResult));
         res.status(500).json(addOrderResult);
     } else {
+        logger.info(postId + ": Ordre creada amb dades " + JSON.stringify(addOrderResult));
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb dades " + JSON.stringify(addOrderResult));
         res.status(200).json(addOrderResult);
     }
-
-    /*
-    try {
-        if (req.body.action === "BUY") {
-            // Si estem comprant hem de saber si tenim prous fons al kraken i quina és la juguesca màxima
-            var fundsAvailable = 0;
-            // TODO: recuperem els fons disponibles, el màxim per jugar i el % de l'exchange
-            var exchangePercentage = 1;  // tant per cent dels fons que s'ha de guardar per cobrir la comissió del exchange
-            var maxFundsToBuyAllowed = 0;
-
-            // Calculem la juquesca, que serà el màxim definit menys un 1% (el que es queda kraken)
-            fundsAvailable -= exchangePercentage / fundsAvailable;
-            // Ajustem al màxim configurat per cada juguesca
-            fundsAvailable = (fundsAvailable > maxFundsToBuyAllowed ? maxFundsToBuyAllowed : fundsAvailable);
-
-            // Consultem el ticker (el preu actual de la crypto), per indicar al kraken la quantitat de crypto que volem
-            var volumeToBuy = await kraken.getVolumeFromFunds(req.body.pair, fundsAvailable);
-            if (volumeToBuy < 0) {
-                return res.status(500).json({ message: "error getting volume from funds" });
-            }
-
-            // Creem l'ordre de compra
-            var orderAdded = kraken.addOrder(req.body.pair, volumeToBuy, "buy");
-            if (orderAdded.error && orderAdded.error.length > 0) {
-                return res.status(500).json({ message: "error adding order: " + orderAdded.error[0] });
-            }
-
-            return res.status(200).json({ message: "buy order added successfully" });
-        } else { // SELL
-            // TODO
-
-            return res.status(500).json({ message: "not implemented" });
-        }        
-    } catch(e) {
-        logger.error(e);
-        return res.status(500).json({ message: "exception: " + e.message });
-    }
-    */
 };
-

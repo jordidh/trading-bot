@@ -47,7 +47,7 @@ Crea a Kraken API i guarda les claus
     "APP_CERT_KEY": "/certs/certs/trading-bot.key",
     "APP_CERT_CERT": "/certs/certs/trading-bot.crt",
     "TELEGRAM": {
-        "TELEGRAM_USER_ID": "XXXXXXXXX",
+        "USER_ID": "XXXXXXXXX",
         "BOT": "xxxxxxxxxxxxx",
         "TOKEN": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     },

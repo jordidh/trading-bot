@@ -5,10 +5,8 @@
  * Module dependencies
  */
 var path = require('path')
-var images = require('../../helpers/telegram/images')
-var utils = require('../../helpers/utils/utils')
-var bot = require('../../api/telegram')
-var database = require('../database')
+var bot = require('./telegram')
+var database = require('../database/database')
 
 exports.sendGIF = async function (id) {
     bot.sendDocument(id, 'https://ethel-dialogflow.s3-eu-west-1.amazonaws.com/telegrambotkraken/bitcoingoingup.gif', {
@@ -17,6 +15,7 @@ exports.sendGIF = async function (id) {
     });
 };
 
+/*
 exports.sendBroadcastNewNgrokServer = async function () {
     var array = []
     array = (await database.all(`SELECT telegram_id as telegram_id from users`))
@@ -29,4 +28,9 @@ exports.sendBroadcastNewNgrokServer = async function () {
             })
         }
     }
+};
+*/
+
+exports.sendMessage = async function (id, message) {
+    await bot.sendMessage(id, message);
 };

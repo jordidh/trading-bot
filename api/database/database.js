@@ -60,7 +60,7 @@ exports.run = async function (sql) {
  */
 exports.boolCheckTelegramUser = async function (telegram_id) {
     try {
-        if (telegram_id == nconf.get("TELEGRAM").TELEGRAM_USER_ID) {
+        if (telegram_id == nconf.get("TELEGRAM").USER_ID) {
             return true
         } else {
             return false

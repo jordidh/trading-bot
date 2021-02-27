@@ -3,11 +3,11 @@
 /**
  * Module dependencies
  */
-var nconf = require('nconf')
-var logger = require('../logger')
-const TeleBot = require('telebot')
-var database = require('../database/database')
-var kraken = require('../exchanges/kraken/apis')
+var config = require('../../config/config');
+var logger = require('../logger');
+const TeleBot = require('telebot');
+var database = require('../database/database');
+var kraken = require('../exchanges/kraken/apis');
 let tradingControl = require('../tradingControl');
 
 const TEST_MODE = true;
@@ -85,7 +85,7 @@ const TEXT = {
 }
 
 const bot = new TeleBot({
-    token: nconf.get("TELEGRAM").TOKEN,
+    token: config.TELEGRAM.TOKEN,
     usePlugins: ['askUser', 'namedButtons'],
     pluginConfig: {
         namedButtons: {

@@ -3,9 +3,9 @@
 /**
  * Module dependencies
  */
-var nconf = require('nconf');
+var config = require('../config/config');
 var app = require('../app');
-var debug = require('debug')(nconf.get("APP") + ':server');
+var debug = require('debug')('trading-bot:server');
 var http = require('http');
 //var https = require('https');
 //var certs = require('../config/certs/certs');
@@ -14,9 +14,9 @@ var logger = require('../api/logger');
 /**
  * Get port from environment and store in Express.
  */
-var portHttp = normalizePort(nconf.get("APP_PORT_HTTP"));
+var portHttp = normalizePort(config.APP_PORT_HTTP);
 app.set('portHttp', portHttp);
-//var portHttps = normalizePort(nconf.get("APP_PORT_HTTPS"));
+//var portHttps = normalizePort(config.APP_PORT_HTTPS);
 //app.set('portHttps', portHttps);
 
 /**

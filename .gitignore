@@ -103,6 +103,4 @@ dist
 # TernJS port file
 .tern-port
 
-config/config.json
-config/config-private.json
-config/certs/certs/
+config/env/

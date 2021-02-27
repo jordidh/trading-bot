@@ -3,10 +3,10 @@
 /**
  * Module dependencies
  */
-var nconf = require('nconf')
+var config = require('../../../config/config')
 const logger = require('../../logger')
 const KrakenClient = require('kraken-api')
-const krakenAPI = new KrakenClient(nconf.get("EXCHANGE_KRAKEN").API_KEY, nconf.get("EXCHANGE_KRAKEN").API_SECRET)
+const krakenAPI = new KrakenClient(config.EXCHANGE_KRAKEN.API_KEY, config.EXCHANGE_KRAKEN.API_SECRET)
 const constants = require('./constants');
 const { constant } = require('async');
 

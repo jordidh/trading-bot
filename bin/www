@@ -59,8 +59,6 @@ function normalizePort(val) {
  * Event listener for HTTP server "error" event.
  */
 function onError(error) {
-  process.exit(1);
-
   if (error.syscall !== 'listen') {
     throw error;
   }

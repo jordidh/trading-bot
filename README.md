@@ -66,3 +66,65 @@ Ves a tradingview.com i configura un missatge i que faci un post al bot
 # NODE_ENV=production pm2 start ./bin/www --name TRADING-BOT-JORDI
 # pm2 save
 ```
+
+
+## Redirecciona l'nginx
+trading bot: escoltant https://localhost:4401
+
+per poder cridar-lo amb https, s'ha de crear una redirecció a nginx
+de https://IP/trading/jordi a https://localhost:4401
+
+
+configuració nginx (/etc/nginx/sites-available/default)
+```
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    include snippets/letsencrypt.conf;
+    include snippets/ssl-params.conf;
+
+    server_name name.domain.com www.name.domain.com;
+
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+
+    # Redireccionem a onion-maintenance-web que escolta per http://localhost:8080
+    location / {
+        auth_basic         "Secure Area";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        proxy_pass         http://localhost:8080/;
+        proxy_redirect     off;
+        proxy_set_header   Host             $host;
+        proxy_set_header   X-Real-IP        $remote_addr;
+        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+    }
+
+
+    # bots de trading
+    location /trading/jordi {
+        proxy_pass         http://localhost:4401/;
+        proxy_redirect     off;
+        proxy_set_header   Host             $host;
+        proxy_set_header   X-Real-IP        $remote_addr;
+        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+    }
+
+}
+
+# redireccionem a HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name name.domain.com www.name.domain.com;
+    #location /.well-known/acme-challenge/9001 {
+    #    root /var/www/html;
+    #}
+    location /.well-known/ {
+        root /var/www/html;
+        auth_basic "off";
+    }
+    location / {
+        return 302 https://$server_name$request_uri;
+    }
+}
+```

@@ -4,6 +4,7 @@
  * Module dependencies
  */
 var config = require('../config/config');
+var tradingControl = require('./tradingControl');
 
 /**
  * Package Functions
@@ -36,7 +37,7 @@ var config = require('../config/config');
         // Màxim número de fons que invertirem en cada jugada
         let maxFundsToBuy = config.EXCHANGE_KRAKEN.MAX_FUNDS_TO_BUY;
 
-
+        let pairObject = await tradingControl.convertPair(pair);
 
         if (action === "buy") {
             // Si estem comprant hem de saber si tenim prous fons al kraken i quina és la juguesca màxima
@@ -67,7 +68,7 @@ var config = require('../config/config');
             let fundsToBuy = (fundsMinusCommission > maxFundsToBuy ? maxFundsToBuy : fundsMinusCommission);
 
             // Consultem el ticker (el preu actual de la crypto), per indicar al kraken la quantitat de crypto que volem
-            let ticker = await kraken.getTicker(pair);
+            let ticker = await kraken.getTicker(pairObject.result.pairSimple);
             if (ticker && ticker.error && Array.isArray(ticker.error) && ticker.error.length > 0) {
                 return { "error" : [ "error getting ticker " + ticker.error[0] ], "result" : { } }
             }
@@ -90,7 +91,7 @@ var config = require('../config/config');
             }
 
             // Creem l'ordre de compra
-            let orderAdded = kraken.addOrder(pair, volumeToBuy.toFixed(9), "buy");
+            let orderAdded = kraken.addOrder(pairObject.result.pairSimple, volumeToBuy.toFixed(9), "buy");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
@@ -101,7 +102,8 @@ var config = require('../config/config');
 console.log("sell ", pair);
 
             // Si estem venent mirem que tinguem vendre el que estem indicant
-            let balance = await kraken.getFunds(pair);
+            // A la funció getFunds hem de passar la cripto amb una X davant, ex: XXBT
+            let balance = await kraken.getFunds(pairObject.result.cryptoX);
             if (balance.error && Array.isArray(balance.error) && balance.error.length > 0) {
                 return { "error" : [ "error adding order getting funds: " + balance.error[0] ], "result" : { } }
             }
@@ -127,8 +129,8 @@ console.log("sell balance ", balance);
             }
 
             // Creem l'ordre de venda
-            // Atenció: el nom del pair ha de ser XBY i no XXBT
-            let orderAdded = kraken.addOrder(pair, fundsToSell.toFixed(9), "sell");
+            // Atenció: el nom del pair ha de ser XBTEUR i no XXBT
+            let orderAdded = kraken.addOrder(pairObject.result.pairSimple, fundsToSell.toFixed(9), "sell");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
@@ -148,7 +150,10 @@ console.log("sell balance ", balance);
  *     "crypto" : "XBT",
  *     "cryptoX" : "XXBT",
  *     "currency" : "EUR",
- *     "currencyZ" : "ZEUR"
+ *     "currencyZ" : "ZEUR",
+ *     "pairOriginal" : "XBT/EUR",
+ *     "pairSimple" : "XBTEUR",
+ *     "pairFull" : "XXBTZEUR"
  *   }
  * }
  * @param {*} pair 
@@ -171,7 +176,10 @@ exports.convertPair = async function(pair) {
             "crypto" : words[0],
             "cryptoX" : "X" + words[0],
             "currency" : words[1],
-            "currencyZ" : "Z" + words[1]
+            "currencyZ" : "Z" + words[1],
+            "pairOriginal" : pair,
+            "pairSimple" : words[0] + words[1],
+            "pairFull" : "X" + words[0] + "Z" + words[1]
         }
     }
 }

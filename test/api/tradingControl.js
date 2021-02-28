@@ -36,7 +36,7 @@ describe('Trading Control, addOrder', () =>  {
                 "volume": 0.002427573349128744
             }
         };
-        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBTEUR", test = true);
+        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = true);
         expect(orderAdded).to.deep.equal(orderAddedExpected);
     });
 
@@ -58,7 +58,7 @@ describe('Trading Control, addOrder', () =>  {
                 "volume": 0
             }
         };
-        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBTEUR", test = true);
+        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = true);
         expect(orderAdded).to.deep.equal(orderAddedExpected);
     });
 
@@ -80,7 +80,7 @@ describe('Trading Control, addOrder', () =>  {
                 "txid" : [ "OAVY7T-MV5VK-KHDF5X" ]
             }
         };
-        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBTEUR", test = false);
+        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = false);
         expect(orderAdded).to.deep.equal(orderAddedExpected);
     });
 });
@@ -120,7 +120,10 @@ describe('Trading Control, convertPair', () =>  {
                 "crypto" : "XBT",
                 "cryptoX" : "XXBT",
                 "currency" : "EUR",
-                "currencyZ" : "ZEUR"
+                "currencyZ" : "ZEUR",
+                "pairOriginal" : "XBT/EUR",
+                "pairSimple" : "XBTEUR",
+                "pairFull" : "XXBTZEUR"
             }
         };
         var result = await tradingControl.convertPair("XBT/EUR");

@@ -65,10 +65,10 @@ const TEXT = {
     info: {
         label: `, Comandes disponibles:\n\n` + 
                `<b>\/balance</b>` +
-               `<b>\/buy [pair]</b>, Ex: /buy XBTEUR, /buy XBTUSD, /buy ETHEUR, /buy ADAEUR, /buy USDTEUR\n` +
-               `<b>\/buytest [pair]</b>, Ex: /buytest XBTEUR\n` +
-               `<b>\/sell [pair]</b>, Ex: /sell XBTEUR\n` +
-               `<b>\/selltest [pair]</b>, Ex: /selltest XBTEUR\n`
+               `<b>\/buy [pair]</b>, Ex: /buy XBT/EUR, /buy XBT/USD, /buy ETH/EUR, /buy ADA/EUR, /buy USDT/EUR\n` +
+               `<b>\/buytest [pair]</b>, Ex: /buytest XBT/EUR\n` +
+               `<b>\/sell [pair]</b>, Ex: /sell XBT/EUR\n` +
+               `<b>\/selltest [pair]</b>, Ex: /selltest XBT/EUR\n`
     },
     activate_bot: {
         label: `🟢 ACTIVAR BOT`

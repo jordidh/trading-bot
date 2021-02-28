@@ -27,7 +27,7 @@ exports.Get = async function (req, res) {
  * Funció que rep l'ordre de vendre o comprar una criptomoneda
  * Informa per telegram de la recepció de l'ordre
  * Laidea es que s'envii des del TrandingView
- * @param {*} req : req.body ha de contenir { "action": "buy"/"sell", "pair": "XBTEUR" }  
+ * @param {*} req : req.body ha de contenir { "action": "buy"/"sell", "pair": "XBT/EUR" }  
  *                  action: comprar o vendre
  *                  pair: el que es comprarà i amb quina modeda separat per un "/"
  * @param {*} res 

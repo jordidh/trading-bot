@@ -254,6 +254,65 @@ bot.on(BUTTONS.buy_test.command, async (msg) => {
     }
 });
 
+// buy
+bot.on(BUTTONS.sell.command, async (msg) => {
+    let id = msg.from.id;
+    
+    // Validació usuari
+    if (id === Number(config.TELEGRAM.USER_ID)) {
+        // Recuperem la informació del missatge rebut
+        let msgLanguageCode = msg.from.language_code; //ca
+        let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
+        let parseMode = 'html';
+
+        // Si hi ha un error en el missatge rebut sortim
+        if (msgWords.length != 2) {
+            return bot.sendMessage(id, 
+                "Error, la crida a la comanda " + BUTTONS.sell.command + " ha de tenir un paràmetre amb el pair, ex: buy XBTEUR",
+                { parseMode, parseMode }
+            );
+        }
+
+        // Tot correcte, creem l'ordre
+        let pair = msgWords[1]; //"XBTEUR"
+        let response = await tradingControl.addOrder(kraken, "sell", pair, REAL_MODE);
+        return bot.sendMessage(id, 
+            `result = ` + JSON.stringify(response),
+            { parseMode, parseMode }
+        );
+    }
+})
+
+// buy test mode
+bot.on(BUTTONS.sell_test.command, async (msg) => {
+    let id = msg.from.id;
+    
+    // Validació usuari
+    if (id === Number(config.TELEGRAM.USER_ID)) {
+        // Recuperem la informació del missatge rebut
+        let msgLanguageCode = msg.from.language_code; //ca
+        let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
+        let parseMode = 'html';
+
+        // Si hi ha un error en el missatge rebut sortim
+        if (msgWords.length != 2) {
+            return bot.sendMessage(id, 
+                "Error, la crida a la comanda " + BUTTONS.sell_test.command + " ha de tenir un paràmetre amb el pair, ex: buy_test XBTEUR",
+                { parseMode, parseMode }
+            );
+        }
+
+        // Tot correcte, creem l'ordre
+        let pair = msgWords[1]; //"XBTEUR"
+        let response = await tradingControl.addOrder(kraken, "sell", pair, TEST_MODE);
+        return bot.sendMessage(id, 
+            `result = ` + JSON.stringify(response),
+            { parseMode, parseMode }
+        );
+    }
+});
+
+
 // All callbackQuery Bot
 bot.on('callbackQuery', async (msg) => {
     let id = msg.from.id

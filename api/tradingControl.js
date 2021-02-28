@@ -112,16 +112,6 @@ console.log("sell balance ", balance);
 
             let fundsToSell = balance.result.funds;
 
-            // Consultem el ticker (el preu actual de la crypto), per indicar al kraken la quantitat de crypto que volem
-            let ticker = await kraken.getTicker(pair);
-            if (ticker && ticker.error && Array.isArray(ticker.error) && ticker.error.length > 0) {
-                return { "error" : [ "error getting ticker " + ticker.error[0] ], "result" : { } }
-            }
-
-console.log("sell tiker ", ticker);
-
-            let volumeToSell = fundsToSell / parseFloat(ticker.result[Object.keys(ticker.result)[0]].a[0]);
-
             // Si estem testejant sortim sense finalitzar la creació de l'ordre
             if (test === true) {
                 return { 
@@ -129,16 +119,12 @@ console.log("sell tiker ", ticker);
                     "result" : {
                             "funds": balance.result.funds,
                             "fundsToSell": fundsToSell,
-                            "exchangePercentage": exchangePercentage,
-                            "volume" : volumeToSell
                     } 
                 }
             }
 
-            console.log("sell volumeToSell ", volumeToSell);
-
             // Creem l'ordre de venda
-            let orderAdded = kraken.addOrder(pair, volumeToSell.toFixed(9), "sell");
+            let orderAdded = kraken.addOrder(pair, fundsToSell.toFixed(9), "sell");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }

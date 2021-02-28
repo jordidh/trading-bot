@@ -59,7 +59,7 @@ var config = require('../config/config');
             }
 
             // Calculem la juquesca, que serà el màxim definit menys un 1% (el que es queda kraken)
-            let fundsMinusCommission = balance.result.funds - (exchangePercentage / balance.result.funds);
+            let fundsMinusCommission = balance.result.funds - (balance.result.funds * exchangePercentage / 100);
             // Ajustem al màxim configurat per cada juguesca
             let fundsToBuy = (fundsMinusCommission > maxFundsToBuy ? maxFundsToBuy : fundsMinusCommission);
 
@@ -87,7 +87,7 @@ var config = require('../config/config');
             }
 
             // Creem l'ordre de compra
-            let orderAdded = kraken.addOrder(pair, volumeToBuy.toFixed(8), "buy");
+            let orderAdded = kraken.addOrder(pair, volumeToBuy.toFixed(9), "buy");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
@@ -129,7 +129,7 @@ var config = require('../config/config');
             }
 
             // Creem l'ordre de venda
-            let orderAdded = kraken.addOrder(pair, volumeToSell.toFixed(8), "sell");
+            let orderAdded = kraken.addOrder(pair, volumeToSell.toFixed(9), "sell");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }

@@ -8,7 +8,6 @@ const logger = require('../../logger')
 const KrakenClient = require('kraken-api')
 const krakenAPI = new KrakenClient(config.EXCHANGE_KRAKEN.API_KEY, config.EXCHANGE_KRAKEN.API_SECRET)
 const constants = require('./constants');
-const { constant } = require('async');
 
 /**
  * Get account balance

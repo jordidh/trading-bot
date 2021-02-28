@@ -84,3 +84,31 @@ describe('Trading Control, addOrder', () =>  {
         expect(orderAdded).to.deep.equal(orderAddedExpected);
     });
 });
+
+describe('Trading Control, balance', () =>  {
+    it('returns internal values creating a BUY Order in test mode', async () => {
+        krakenMocked.setBalance({
+            "error" : [],
+            "result" : {
+                "ZUSD" : [3415.8014],
+                "ZEUR" : [155.5649],
+                "XXBT" : [149.9688412800],
+                "XXRP" : [499889.51600000]
+            }
+        });
+
+        var orderAddedExpected = {
+            "error" : [ ],
+            "result" : {
+                "exchangePercentage": 1,
+                "funds": 155.56,
+                "fundsMinusCommission": 155.55357161223967,
+                "fundsToBuy": 100,
+                "maxLimitFundsToBuy": 100,
+                "volume": 0.002427573349128744
+            }
+        };
+        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBTEUR", test = true);
+        expect(orderAdded).to.deep.equal(orderAddedExpected);
+    });
+});

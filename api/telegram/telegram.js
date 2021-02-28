@@ -62,7 +62,7 @@ const BUTTONS = {
 };
 
 const TEXT = {
-    wellcome: {
+    info: {
         label: `, Comandes disponibles:\n\n` + 
                `<b>\/balance</b>` +
                `<b>\/buy [pair]</b>, Ex: /buy XBTEUR, /buy XBTUSD, /buy ETHEUR, /buy ADAEUR, /buy USDTEUR\n` +
@@ -111,7 +111,7 @@ bot.on(BUTTONS.start.command, async (msg) => {
             [BUTTONS.buy.label, BUTTONS.sell.label],
             [BUTTONS.logs.label, BUTTONS.bot.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.wellcome.label, { replyMarkup, parseMode })
+        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label, { replyMarkup, parseMode })
     }
 });
 
@@ -129,7 +129,7 @@ bot.on(BUTTONS.info.command, async (msg) => {
             [BUTTONS.buy.label, BUTTONS.sell.label],
             [BUTTONS.logs.label, BUTTONS.bot.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.wellcome.label, { replyMarkup, parseMode })
+        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label, { replyMarkup, parseMode })
     }
 });
 

@@ -30,7 +30,7 @@ describe('Trading Control, addOrder', () =>  {
             "result" : {
                 "exchangePercentage": 1,
                 "funds": 155.56,
-                "fundsMinusCommission": 155.55357161223967,
+                "fundsMinusCommission": 154.0044,
                 "fundsToBuy": 100,
                 "maxLimitFundsToBuy": 100,
                 "volume": 0.002427573349128744
@@ -76,7 +76,7 @@ describe('Trading Control, addOrder', () =>  {
         var orderAddedExpected = {
             "error" : [ ],
             "result" : {
-                "descr" : [ { "order" : "buy 0.00242757 XBTEUR @ market" } ],
+                "descr" : [ { "order" : "buy 0.002427573 XBTEUR @ market" } ],
                 "txid" : [ "OAVY7T-MV5VK-KHDF5X" ]
             }
         };
@@ -85,6 +85,50 @@ describe('Trading Control, addOrder', () =>  {
     });
 });
 
+describe('Trading Control, convertPair', () =>  {
+    it('returns error if pair is not well formated, ex: XBTEUR', async () => {
+        var resultExpected = {
+            "error" : [ "Parameter \"pair\" has not the correct format <crypto>/<currency>: XBTEUR" ],
+            "result" : { }
+        };
+        var result = await tradingControl.convertPair("XBTEUR");
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if pair is not well formated, ex: XBT/EUR/HOL', async () => {
+        var resultExpected = {
+            "error" : [ "Parameter \"pair\" has not the correct format <crypto>/<currency>: XBT/EUR/HOL" ],
+            "result" : { }
+        };
+        var result = await tradingControl.convertPair("XBT/EUR/HOL");
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if pair is not well formated, ex: string.empty', async () => {
+        var resultExpected = {
+            "error" : [ "Parameter \"pair\" has not the correct format <crypto>/<currency>: " ],
+            "result" : { }
+        };
+        var result = await tradingControl.convertPair("");
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns ok if pair is well formated, ex: XBT/EUR', async () => {
+        var resultExpected = {
+            "error" : [  ],
+            "result" : { 
+                "crypto" : "XBT",
+                "cryptoX" : "XXBT",
+                "currency" : "EUR",
+                "currencyZ" : "ZEUR"
+            }
+        };
+        var result = await tradingControl.convertPair("XBT/EUR");
+        expect(result).to.deep.equal(resultExpected);
+    });
+});
+
+/*
 describe('Trading Control, balance', () =>  {
     it('returns internal values creating a BUY Order in test mode', async () => {
         krakenMocked.setBalance({
@@ -112,3 +156,4 @@ describe('Trading Control, balance', () =>  {
         expect(orderAdded).to.deep.equal(orderAddedExpected);
     });
 });
+*/

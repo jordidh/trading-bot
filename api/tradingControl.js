@@ -13,7 +13,7 @@ var config = require('../config/config');
   * 
   * @param {*} kraken : objecte de l'exchange kraken amb les funcions per cridar a les seves api
   * @param {*} action : buy o sell
-  * @param {*} pair : cripto i moneda, p.e. XBTEUR
+  * @param {*} pair : cripto i moneda separats per un "/" p.e. XBT/EUR
   * @param {*} test : si es true fa totes les accions excepte crear l'ordre i enlloc de retornar
   *                   el resultat de crear l'ordre retorna els valors previs, ex:
   *                   { "error" : [], "result" : {
@@ -36,8 +36,11 @@ var config = require('../config/config');
         // Màxim número de fons que invertirem en cada jugada
         let maxFundsToBuy = config.EXCHANGE_KRAKEN.MAX_FUNDS_TO_BUY;
 
+
+
         if (action === "buy") {
             // Si estem comprant hem de saber si tenim prous fons al kraken i quina és la juguesca màxima
+            // Per obtenir els fons el currency ha de'star en format ZEUR, XXBT, ...
             let balance = await kraken.getFunds(currency);
             if (balance.error && Array.isArray(balance.error) && balance.error.length > 0) {
                 return { "error" : [ "error adding order getting funds: " + balance.error[0] ], "result" : { } }
@@ -124,6 +127,7 @@ console.log("sell balance ", balance);
             }
 
             // Creem l'ordre de venda
+            // Atenció: el nom del pair ha de ser XBY i no XXBT
             let orderAdded = kraken.addOrder(pair, fundsToSell.toFixed(9), "sell");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
@@ -133,5 +137,41 @@ console.log("sell balance ", balance);
         }        
     } catch(e) {
         return { "error" : [ "exception: " + e.message ], "result" : { } }
+    }
+}
+
+/**
+ * A partir d'un pair en pormat XBT/EUR retorna un objecte amb les diferents variants:
+ * {
+ *   "error" : []
+ *   "result": {
+ *     "crypto" : "XBT",
+ *     "cryptoX" : "XXBT",
+ *     "currency" : "EUR",
+ *     "currencyZ" : "ZEUR"
+ *   }
+ * }
+ * @param {*} pair 
+ */
+exports.convertPair = async function(pair) {
+    // Validem que tingui el separador "/"
+    let words = pair.split("/");
+    
+    if (words.length != 2) {
+        return {
+            "error" : [ "Parameter \"pair\" has not the correct format <crypto>/<currency>: " + pair ],
+            "result" : {}
+        };
+    }
+
+    // Construim l'objecte
+    return {
+        "error" : [],
+        "result" : {
+            "crypto" : words[0],
+            "cryptoX" : "X" + words[0],
+            "currency" : words[1],
+            "currencyZ" : "Z" + words[1]
+        }
     }
 }

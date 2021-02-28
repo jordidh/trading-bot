@@ -108,14 +108,14 @@ exports.getFunds = async function (currency) {
                     "funds" : 0
                 }
             };
-        }
+        }        
 
         // Recuperem els fons
         let funds = 0;
         for (var i = 0; i < Object.entries(balance.result).length; i++) {
             let asset = Object.entries(balance.result)[i][0];
             if (asset === currency) {
-                funds = parseFloat(Object.entries(balance.result)[i][1]).toFixed(2);
+                funds = parseFloat(Object.entries(balance.result)[i][1]);
             }
         }
 

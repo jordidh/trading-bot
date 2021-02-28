@@ -94,11 +94,16 @@ var config = require('../config/config');
 
             return orderAdded;
         } else { // sell
+
+console.log("sell ", pair);
+
             // Si estem venent mirem que tinguem vendre el que estem indicant
             let balance = await kraken.getFunds(pair);
             if (balance.error && Array.isArray(balance.error) && balance.error.length > 0) {
                 return { "error" : [ "error adding order getting funds: " + balance.error[0] ], "result" : { } }
             }
+
+console.log("sell balance ", balance);
 
             // Si no tenim fons del que volem vendre retornem error
             if (balance.result.funds === 0) {
@@ -112,6 +117,8 @@ var config = require('../config/config');
             if (ticker && ticker.error && Array.isArray(ticker.error) && ticker.error.length > 0) {
                 return { "error" : [ "error getting ticker " + ticker.error[0] ], "result" : { } }
             }
+
+console.log("sell tiker ", ticker);
 
             let volumeToSell = fundsToSell / parseFloat(ticker.result[Object.keys(ticker.result)[0]].a[0]);
 
@@ -127,6 +134,8 @@ var config = require('../config/config');
                     } 
                 }
             }
+
+            console.log("sell volumeToSell ", volumeToSell);
 
             // Creem l'ordre de venda
             let orderAdded = kraken.addOrder(pair, volumeToSell.toFixed(9), "sell");

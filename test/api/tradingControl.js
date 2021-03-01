@@ -33,7 +33,8 @@ describe('Trading Control, addOrder', () =>  {
                 "fundsMinusCommission": 154.0044,
                 "fundsToBuy": 100,
                 "maxLimitFundsToBuy": 100,
-                "volume": 0.002427573349128744
+                "volume": 0.002427573349128744,
+                "price": 41193.4
             }
         };
         var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = true);
@@ -55,7 +56,8 @@ describe('Trading Control, addOrder', () =>  {
                 "fundsMinusCommission": 0,
                 "fundsToBuy": 0,
                 "maxLimitFundsToBuy": 100,
-                "volume": 0
+                "volume": 0,
+                "price": 0
             }
         };
         var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = true);
@@ -77,7 +79,8 @@ describe('Trading Control, addOrder', () =>  {
             "error" : [ ],
             "result" : {
                 "descr" : [ { "order" : "buy 0.002427573 XBTEUR @ market" } ],
-                "txid" : [ "OAVY7T-MV5VK-KHDF5X" ]
+                "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
+                "price" : 2.345
             }
         };
         var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = false);

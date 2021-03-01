@@ -27,9 +27,10 @@ exports.Get = async function (req, res) {
  * Funció que rep l'ordre de vendre o comprar una criptomoneda
  * Informa per telegram de la recepció de l'ordre
  * Laidea es que s'envii des del TrandingView
- * @param {*} req : req.body ha de contenir { "action": "buy"/"sell", "pair": "XBT/EUR" }  
+ * @param {*} req : req.body ha de contenir { "action": "buy"/"sell", "pair": "XBT/EUR", "token": "" }  
  *                  action: comprar o vendre
  *                  pair: el que es comprarà i amb quina modeda separat per un "/"
+ *                  token: APP_TOKEN configurat en el fitxer config/config.json que permetrà accedir a l'aplicació
  * @param {*} res 
  * 
  * Retorna un objecte del tipus: { "error" : [], "result" : { "descr" : action + " " + volume + " " + pair + " @ market", "txid" : [ "OAVY7T-MV5VK-KHDF5X" ] } }

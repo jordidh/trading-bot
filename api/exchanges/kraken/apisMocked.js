@@ -163,7 +163,8 @@ exports.addOrder = async function (pair, volume, action) {
             "error" : [],
             "result" : {
                 "descr" : [ { "order" : action + " " + volume + " " + pair + " @ market" } ],
-                "txid" : [ "OAVY7T-MV5VK-KHDF5X" ]
+                "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
+                "price" : 2.345
             }
         };
         //console.log(msg);

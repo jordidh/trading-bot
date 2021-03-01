@@ -23,10 +23,22 @@ var tradingControl = require('./tradingControl');
   *                       "fundsToBuy": X,
   *                       "exchangePercentage": X,
   *                       "maxLimitFundsToBuy": X,
-  *                       "volume" : X
+  *                       "volume" : X,
+  *                       "price" : X
   *                   } }
-  * Si el paràmetre test === false: retorna { "error" : [], "result" : { "descr" : action + " " + volume + " " + pair + " @ market", "txid" : [ "OAVY7T-MV5VK-KHDF5X" ] } }
-  * Si el paràmetre test === true: retorna { "error" : [], "result" : { "funds": X, "fundsMinusCommission": X, "fundsToBuy": X, "exchangePercentage": X, "maxLimitFundsToBuy": X, "volume" : X } }
+  * @return
+  * Si el paràmetre test === false: retorna { 
+  *     "error" : [], 
+  *     "result" : { 
+  *         "descr" : action + " " + volume + " " + pair + " @ market", 
+  *         "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
+  *         "ticker" : 
+  *     } 
+  * }
+  * Si el paràmetre test === true: retorna { 
+  *     "error" : [], 
+  *     "result" : { "funds": X, "fundsMinusCommission": X, "fundsToBuy": X, "exchangePercentage": X, "maxLimitFundsToBuy": X, "volume" : X, "price" : X } 
+  * }
   */
  exports.addOrder = async function(kraken, action, pair, test) {
     try {
@@ -57,7 +69,8 @@ var tradingControl = require('./tradingControl');
                             "fundsToBuy": 0,
                             "exchangePercentage": exchangePercentage,
                             "maxLimitFundsToBuy": maxFundsToBuy,
-                            "volume" : 0
+                            "volume" : 0,
+                            "price" : 0
                     } 
                 }
             }
@@ -73,7 +86,8 @@ var tradingControl = require('./tradingControl');
                 return { "error" : [ "error getting ticker " + ticker.error[0] ], "result" : { } }
             }
 
-            let volumeToBuy = fundsToBuy / parseFloat(ticker.result[Object.keys(ticker.result)[0]].a[0]);
+            let priceToBuy = parseFloat(ticker.result[Object.keys(ticker.result)[0]].a[0]);
+            let volumeToBuy = fundsToBuy / priceToBuy;
 
             // Si estem testejant sortim sense finalitzar la creació de l'ordre
             if (test === true) {
@@ -85,7 +99,8 @@ var tradingControl = require('./tradingControl');
                             "fundsToBuy": fundsToBuy,
                             "exchangePercentage": exchangePercentage,
                             "maxLimitFundsToBuy": maxFundsToBuy,
-                            "volume" : volumeToBuy
+                            "volume" : volumeToBuy,
+                            "price" : priceToBuy
                     } 
                 }
             }
@@ -96,10 +111,11 @@ var tradingControl = require('./tradingControl');
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
 
+            // Afegim el price al reusultat retornat per kraken
+            orderAdded.price = priceToBuy;
+
             return orderAdded;
         } else { // sell
-
-console.log("sell ", pair);
 
             // Si estem venent mirem que tinguem vendre el que estem indicant
             // A la funció getFunds hem de passar la cripto amb una X davant, ex: XXBT
@@ -108,14 +124,20 @@ console.log("sell ", pair);
                 return { "error" : [ "error adding order getting funds: " + balance.error[0] ], "result" : { } }
             }
 
-console.log("sell balance ", balance);
-
             // Si no tenim fons del que volem vendre retornem error
             if (balance.result.funds === 0) {
                 return { "error" : [ "error, no funds to sell from " + pair ], "result" : { } }
             }
 
             let fundsToSell = balance.result.funds;
+
+            // Consultem el ticker (el preu actual de la crypto), per indicar al kraken la quantitat de crypto que volem
+            let ticker = await kraken.getTicker(pairObject.result.pairSimple);
+            if (ticker && ticker.error && Array.isArray(ticker.error) && ticker.error.length > 0) {
+                return { "error" : [ "error getting ticker " + ticker.error[0] ], "result" : { } }
+            }
+
+            let priceToSell = parseFloat(ticker.result[Object.keys(ticker.result)[0]].a[0]);
 
             // Si estem testejant sortim sense finalitzar la creació de l'ordre
             if (test === true) {
@@ -124,6 +146,7 @@ console.log("sell balance ", balance);
                     "result" : {
                             "funds": balance.result.funds,
                             "fundsToSell": fundsToSell,
+                            "price": priceToSell
                     } 
                 }
             }
@@ -134,6 +157,9 @@ console.log("sell balance ", balance);
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
+
+            // Afegim el price al reusultat retornat per kraken
+            orderAdded.price = priceToSell;
 
             return orderAdded;
         }        

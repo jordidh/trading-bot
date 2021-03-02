@@ -4,9 +4,8 @@
 /**
  * Module dependencies
  */
-var path = require('path')
-var bot = require('./telegram')
-var database = require('../database/database')
+var path = require('path');
+var bot = require('./telegram');
 
 exports.sendGIF = async function (id) {
     bot.sendDocument(id, 'https://ethel-dialogflow.s3-eu-west-1.amazonaws.com/telegrambotkraken/bitcoingoingup.gif', {

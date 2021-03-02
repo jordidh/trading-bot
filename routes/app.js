@@ -11,6 +11,7 @@ const tradingControl = require('../api/tradingControl');
 //const TeleBot = require('telebot')
 const telegramCommands = require('../api/telegram/commands');
 const config = require('../config/config');
+var BotPersistentData = require('../api/database/botPersistentData');
 
 const TEST_MODE = true;
 const REAL_MODE = false;
@@ -87,6 +88,15 @@ exports.Post = async function (req, res) {
         logger.info(postId + ": request body must have property \"pair\"");
         await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"pair\"");
         return res.status(400).json({ error: [ "request body must have property \"pair\"" ] });
+    }
+
+    // Recuperem o creem una instància del bot
+    let botData = new BotPersistentData().getInstance();
+    // Obtenim l'estat del bot (si està actiu o inactiu)
+    if (botData.Active === false) {
+        logger.info(postId + ": bot inactive");
+        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "bot inactive");
+        return res.status(400).json({ error: [ "bot inactive" ] });
     }
 
     // Creem l'ordre

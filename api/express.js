@@ -7,7 +7,6 @@ var path = require('path');
 var compression = require('compression');
 var bodyParser = require('body-parser');
 var cors = require('cors');
-var database = require('../api/database/database');
 var nconf = require('nconf');
 
 /**
@@ -18,9 +17,6 @@ module.exports = function (app) {
   // Carga fichero config.json
   nconf.file('config', path.join(__dirname, '../config/config.json'));
   nconf.load();
-
-  // Obre la BD, crea les taules si no eixsteixen i omple amb dades inicials
-  database.CheckDatabaseTables();
 
   // Módulo Express
   app.use(compression());

@@ -6,9 +6,9 @@
 var config = require('../../config/config');
 var logger = require('../logger');
 const TeleBot = require('telebot');
-var database = require('../database/database');
 var kraken = require('../exchanges/kraken/apis');
 let tradingControl = require('../tradingControl');
+var BotPersistentData = require('../database/botPersistentData');
 
 const TEST_MODE = true;
 const REAL_MODE = false;
@@ -54,10 +54,10 @@ const BUTTONS = {
         command: '/bot'
     },
     bot_activate: {
-        label: '/activatebot'
+        label: '/activate'
     },
     bot_deactivate: {
-        label: '/deactivatebot'
+        label: '/deactivate'
     }
 };
 
@@ -68,19 +68,25 @@ const TEXT = {
                `<b>\/buy [pair]</b>, Ex: /buy XBT/EUR, /buy XBT/USD, /buy ETH/EUR, /buy ADA/EUR, /buy USDT/EUR\n` +
                `<b>\/buytest [pair]</b>, Ex: /buytest XBT/EUR\n` +
                `<b>\/sell [pair]</b>, Ex: /sell XBT/EUR\n` +
-               `<b>\/selltest [pair]</b>, Ex: /selltest XBT/EUR\n`
+               `<b>\/selltest [pair]</b>, Ex: /selltest XBT/EUR\n` +
+               `\n` +
+               `<b>/activate</b>, s'activa la compra/venda automàtica amb POST\n` +
+               `<b>/deactivate</b>, es desactiva la compra/venda automàtica amb POST\n` +
+               `<b>/bot</b>, es mostra l'estat actual del bot: si està actiu o no\n`+
+               `\n` +
+               `<b>/logs [num_last_logs]</b>, retorna els últims logs (compres i vendes)\n`
     },
     activate_bot: {
-        label: `🟢 ACTIVAR BOT`
+        label: `🟢 ACTIVA EL BOT`
     },
     activate_bot_description: {
-        label: `En este estado el Bot realizará operaciones de forma automática cuando reciba señales de TradingView`
+        label: `En este estado el Bot realizará operaciones cuando reciba señales de TradingView, si es podran fer operacions de forma manual`
     },
     deactivate_bot: {
-        label: `🔴 DESACTIVAR BOT`
+        label: `🔴 DESACTIVA EL BOT`
     },
     deactivate_bot_description: {
-        label: `En este estado el Bot NO realizará ninguna operación de forma automática cuando reciba señales de TradingView`
+        label: `En este estado el Bot NO realizará ninguna operación cuando reciba señales de TradingView, si es podran fer operacions de forma manual`
     },
 }
 
@@ -107,9 +113,8 @@ bot.on(BUTTONS.start.command, async (msg) => {
     if (id === Number(config.TELEGRAM.USER_ID)) {
         // Menú Principal
         let replyMarkup = bot.keyboard([
-            [BUTTONS.info.label, BUTTONS.balance.label],
-            [BUTTONS.buy.label, BUTTONS.sell.label],
-            [BUTTONS.logs.label, BUTTONS.bot.label]
+            [BUTTONS.info.label, BUTTONS.bot.label],
+            [BUTTONS.balance.label]
         ], { resize: true });
         return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label, { replyMarkup, parseMode })
     }
@@ -125,9 +130,8 @@ bot.on(BUTTONS.info.command, async (msg) => {
     if (id === Number(config.TELEGRAM.USER_ID)) {
         // Menú Principal
         let replyMarkup = bot.keyboard([
-            [BUTTONS.info.label, BUTTONS.balance.label],
-            [BUTTONS.buy.label, BUTTONS.sell.label],
-            [BUTTONS.logs.label, BUTTONS.bot.label]
+            [BUTTONS.info.label, BUTTONS.bot.label],
+            [BUTTONS.balance.label]
         ], { resize: true });
         return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label, { replyMarkup, parseMode })
     }
@@ -141,15 +145,13 @@ bot.on(BUTTONS.balance.command, async (msg) => {
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
         // Muestra logs usuario
-        var data = await kraken.getBalance()
+        var balance = await kraken.getBalance();
         // Menú Principal
         let replyMarkup = bot.keyboard([
-            [BUTTONS.info.label, BUTTONS.balance.label],
-            [BUTTONS.buy.label, BUTTONS.sell.label],
-            [BUTTONS.logs.label, BUTTONS.bot.label]
+            [BUTTONS.info.label, BUTTONS.bot.label],
+            [BUTTONS.balance.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + data + `</b>`, { replyMarkup, parseMode })
-        console.log(data)
+        return bot.sendMessage(id, JSON.stringify(balance), { replyMarkup, parseMode });
     }
 })
 
@@ -161,14 +163,13 @@ bot.on(BUTTONS.logs.command, async (msg) => {
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
         // Muestra logs usuario
-        var logs = await database.arrayGetUserLogs(id)
+        //var logs = await database.arrayGetUserLogs(id)
         // Menú Principal
         let replyMarkup = bot.keyboard([
-            [BUTTONS.info.label, BUTTONS.balance.label],
-            [BUTTONS.buy.label, BUTTONS.sell.label],
-            [BUTTONS.logs.label, BUTTONS.bot.label]
+            [BUTTONS.info.label, BUTTONS.bot.label],
+            [BUTTONS.balance.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + logs + `</b>`, { replyMarkup, parseMode })
+        return bot.sendMessage(id, `<b>` + logs + `</b>`, { replyMarkup, parseMode });
     }
 });
 
@@ -180,18 +181,19 @@ bot.on(BUTTONS.bot.command, async (msg) => {
     let replyMarkup
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
-        // Comprobaremos el estado del Bot
-        var status = await database.GetStatusBot()
-        if (status.status === 1) {
+        // Recuperem o creem una instància del bot
+        let botData = new BotPersistentData().getInstance();
+        console.log("botData.Active=" + botData.Active);
+        if (botData.Active === true) {
             replyMarkup = bot.inlineKeyboard([
                 [bot.inlineButton(TEXT.deactivate_bot.label, { callback: BUTTONS.bot_deactivate.label })]
             ]);
-            return bot.sendMessage(id, `<b> 🟢 ESTADO BOT: ACTIVADO \nACCESO: ` + status.updated + '\n\n' + TEXT.activate_bot_description.label + `</b>`, { replyMarkup, parseMode });
+            return bot.sendMessage(id, `<b> 🟢 BOT STATUS: ACTIVATED` + '\n\n' + TEXT.activate_bot_description.label + `</b>`, { replyMarkup, parseMode });
         } else {
             replyMarkup = bot.inlineKeyboard([
                 [bot.inlineButton(TEXT.activate_bot.label, { callback: BUTTONS.bot_activate.label })]
             ]);
-            return bot.sendMessage(id, `<b> 🔴 ESTADO BOT: DESACTIVADO \nACCESO: ` + status.updated + '\n\n' + TEXT.deactivate_bot_description.label + `</b>`, { replyMarkup, parseMode });
+            return bot.sendMessage(id, `<b> 🔴 BOT STATUS: DEACTIVATED` + '\n\n' + TEXT.deactivate_bot_description.label + `</b>`, { replyMarkup, parseMode });
         }
     }
 })
@@ -202,6 +204,14 @@ bot.on(BUTTONS.buy.command, async (msg) => {
     
     // Validació usuari
     if (id === Number(config.TELEGRAM.USER_ID)) {
+        // Encara que el bot estigui desactivat permetem fer compres de forma manual
+        // Recuperem o creem una instància del bot
+        //let botData = new BotPersistentData().getInstance();
+        // Obtenim l'estat del bot (si està actiu o inactiu)
+        //if (botData.Active === false) {
+        //    return bot.sendMessage(id, "bot inactive", { parseMode, parseMode });
+        //}
+
         // Recuperem la informació del missatge rebut
         let msgLanguageCode = msg.from.language_code; //ca
         let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
@@ -260,6 +270,15 @@ bot.on(BUTTONS.sell.command, async (msg) => {
     
     // Validació usuari
     if (id === Number(config.TELEGRAM.USER_ID)) {
+
+        // Encara que el bot estigui desactivat permetem fer compres de forma manual
+        // Recuperem o creem una instància del bot
+        //let botData = new BotPersistentData().getInstance();
+        // Obtenim l'estat del bot (si està actiu o inactiu)
+        //if (botData.Active === false) {
+        //    return bot.sendMessage(id, "bot inactive", { parseMode, parseMode });
+        //}
+
         // Recuperem la informació del missatge rebut
         let msgLanguageCode = msg.from.language_code; //ca
         let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
@@ -320,15 +339,20 @@ bot.on('callbackQuery', async (msg) => {
     let parseMode = 'html';
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
-        let updated = null
+        let updated = null;
+        // Recuperem o creem una instància del bot
+        let botData = new BotPersistentData().getInstance();
+
         // Actualizaremos el estado del Bot
         switch (msg.data) {
             case BUTTONS.bot_activate.label:
-                updated = await database.UpdateStatusBot(true)
-                return bot.sendMessage(id, `<b> 🟢 ESTADO BOT: ACTIVADO \nACCESO: ` + updated + '\n\n' + TEXT.activate_bot_description.label + `</b>`, { parseMode, parseMode })
+                // Obtenim l'estat del bot (si està actiu o inactiu)
+                await botData.SetStatusBot(true);
+                return bot.sendMessage(id, `<b> 🟢 BOT STATUS: ACTIVATED` + '\n\n' + TEXT.activate_bot_description.label + `</b>`, { parseMode, parseMode })
             case BUTTONS.bot_deactivate.label:
-                updated = await database.UpdateStatusBot(false)
-                return bot.sendMessage(id, `<b> 🔴 ESTADO BOT: DESACTIVADO \nACCESO: ` + updated + '\n\n' + TEXT.deactivate_bot_description.label + `</b>`, { parseMode, parseMode })
+                // Obtenim l'estat del bot (si està actiu o inactiu)
+                await botData.SetStatusBot(false);
+                return bot.sendMessage(id, `<b> 🔴 BOT STATUS: DEACTIVATED` + '\n\n' + TEXT.deactivate_bot_description.label + `</b>`, { parseMode, parseMode })
         }
     }
 })

@@ -80,7 +80,7 @@ describe('Trading Control, addOrder', () =>  {
             "result" : {
                 "descr" : [ { "order" : "buy 0.002427573 XBTEUR @ market" } ],
                 "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
-                "price" : 2.345
+                "price" : 41193.4
             }
         };
         var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = false);

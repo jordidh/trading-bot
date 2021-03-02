@@ -32,7 +32,7 @@ var tradingControl = require('./tradingControl');
   *     "result" : { 
   *         "descr" : action + " " + volume + " " + pair + " @ market", 
   *         "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
-  *         "ticker" : 
+  *         "price" : X
   *     } 
   * }
   * Si el paràmetre test === true: retorna { 
@@ -106,13 +106,14 @@ var tradingControl = require('./tradingControl');
             }
 
             // Creem l'ordre de compra
-            let orderAdded = kraken.addOrder(pairObject.result.pairSimple, volumeToBuy.toFixed(9), "buy");
+            let orderAdded = await kraken.addOrder(pairObject.result.pairSimple, volumeToBuy.toFixed(9), "buy");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
 
             // Afegim el price al reusultat retornat per kraken
-            orderAdded.price = priceToBuy;
+            console.log(orderAdded);
+            orderAdded.result.price = priceToBuy;
 
             return orderAdded;
         } else { // sell
@@ -153,13 +154,14 @@ var tradingControl = require('./tradingControl');
 
             // Creem l'ordre de venda
             // Atenció: el nom del pair ha de ser XBTEUR i no XXBT
-            let orderAdded = kraken.addOrder(pairObject.result.pairSimple, fundsToSell.toFixed(9), "sell");
+            let orderAdded = await kraken.addOrder(pairObject.result.pairSimple, fundsToSell.toFixed(9), "sell");
             if (orderAdded.error && orderAdded.error.length > 0) {
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
 
             // Afegim el price al reusultat retornat per kraken
-            orderAdded.price = priceToSell;
+            console.log(orderAdded);
+            orderAdded.result.price = priceToSell;
 
             return orderAdded;
         }        

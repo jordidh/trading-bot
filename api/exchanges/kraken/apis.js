@@ -26,7 +26,10 @@ exports.getBalance = async function () {
         //                "XXRP" : [499889.51600000],
         //                ...
         //   ]
-        let data = await krakenAPI.api('Balance');
+        let balance = await krakenAPI.api('Balance');
+        return balance;
+        
+        /*
         if (Object.entries(data.result).length > 0) {
             let result = ''
             let sum = []
@@ -55,10 +58,14 @@ exports.getBalance = async function () {
         } else {
             return `❌ BALANCE NO ENCONTRADO!`
         }
+        */
     }
     catch (err) {
         logger.error(err.message)
-        return err.message
+        return { 
+            "error" : [ err.message ], 
+            "result" : { }
+        };
     }
 }
 

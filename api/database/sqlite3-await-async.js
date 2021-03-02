@@ -1,44 +1,42 @@
 /**
  * Module dependencies
  */
-const sqlite3 = require('sqlite3').verbose()
+const sqlite3 = require('sqlite3').verbose();
+const DATABASE_PATH = './database/trading.db';
 
 // Exports
-var db
-exports.db = db
+var db = new sqlite3.Database(DATABASE_PATH, (err) => {
+    if (err) {
+        console.error("Error in SQLite DB opening ", err);
+        return;
+    }
+    console.log('Connected to SQlite database.');
+});
 
-exports.open = function (path) {
-    return new Promise(function (resolve, reject) {
-        this.db = new sqlite3.Database(path,
-            function (err) {
-                if (err) reject("Open error: " + err.message)
-                else resolve(path + " opened")
-            }
-        )
-    })
-}
+exports.db = db;
+
 
 // any query: insert/delete/update
 exports.run = function (query) {
     return new Promise(function (resolve, reject) {
-        this.db.run(query,
+        db.run(query,
             function (err) {
                 if (err) reject(err.message)
                 else resolve(true)
-            })
-    })
+            });
+    });
 }
 
 // first row read
 exports.get = function (query, params) {
     return new Promise(function (resolve, reject) {
-        this.db.get(query, params, function (err, row) {
+        db.get(query, params, function (err, row) {
             if (err) reject("Read error: " + err.message)
             else {
                 resolve(row)
             }
-        })
-    })
+        });
+    });
 }
 
 // set of rows read
@@ -46,19 +44,18 @@ exports.all = function (query, params) {
     return new Promise(function (resolve, reject) {
         if (params == undefined) params = []
 
-        this.db.all(query, params, function (err, rows) {
+        db.all(query, params, function (err, rows) {
             if (err) reject("Read error: " + err.message)
             else {
                 resolve(rows)
             }
-        })
-    })
+        });
+    });
 }
 
 // each row returned one by one 
 exports.each = function (query, params, action) {
     return new Promise(function (resolve, reject) {
-        var db = this.db
         db.serialize(function () {
             db.each(query, params, function (err, row) {
                 if (err) reject("Read error: " + err.message)
@@ -67,17 +64,10 @@ exports.each = function (query, params, action) {
                         action(row)
                     }
                 }
-            })
+            });
             db.get("", function (err, row) {
                 resolve(true)
-            })
-        })
-    })
-}
-
-exports.close = function () {
-    return new Promise(function (resolve, reject) {
-        this.db.close()
-        resolve(true)
-    })
+            });
+        });
+    });
 }

@@ -69,13 +69,11 @@ Ves a tradingview.com i configura un missatge i que faci un post al bot
 
 
 ## Redirecciona l'nginx
-trading bot: escoltant https://localhost:4401
+Trading bot: escolta per http://localhost:4401
+Per poder cridar-lo amb https, s'ha de crear una redirecció a nginx
+de https://IP/trading/bot a https://localhost:4401
 
-per poder cridar-lo amb https, s'ha de crear una redirecció a nginx
-de https://IP/trading/jordi a https://localhost:4401
-
-
-configuració nginx (/etc/nginx/sites-available/default)
+Configuració nginx (/etc/nginx/sites-available/default):
 ```
 server {
     listen 443 ssl;
@@ -88,7 +86,7 @@ server {
     root /var/www/html;
     index index.html index.htm index.nginx-debian.html;
 
-    # Redireccionem a onion-maintenance-web que escolta per http://localhost:8080
+    # Redireccionem a http://localhost:8080
     location / {
         auth_basic         "Secure Area";
         auth_basic_user_file /etc/nginx/.htpasswd;
@@ -101,7 +99,7 @@ server {
 
 
     # bots de trading
-    location /trading/jordi {
+    location /trading/bot {
         proxy_pass         http://localhost:4401/;
         proxy_redirect     off;
         proxy_set_header   Host             $host;

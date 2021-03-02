@@ -201,21 +201,52 @@ bot.on(BUTTONS.balance.command, async (msg) => {
     }
 })
 
-// Logs
+// Logs: recuperem els últims logs de compra i venda
 bot.on(BUTTONS.logs.command, async (msg) => {
     let id = msg.from.id
-    let first_name = msg.from.first_name
+    //let first_name = msg.from.first_name
     let parseMode = 'html';
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
-        // Muestra logs usuario
+        let msgWords = msg.text.split(' ');  // Ex: '/logs 20'
+        // Si hi ha un error en el missatge rebut sortim
+        if (msgWords.length != 2) {
+            return bot.sendMessage(id, 
+                "Error, la crida a la comanda " + BUTTONS.logs.command + " ha de tenir un paràmetre amb el número de logs que es volen consultar",
+                { parseMode, parseMode }
+            );
+        }
+
+        console.log("1");
+
+        if (isNaN(msgWords[1]) || isNaN(parseInt(msgWords[1])) ) {
+            return bot.sendMessage(id, 
+                "Error, el sogon paràmetre no és un numèric",
+                { parseMode, parseMode }
+            );
+        }
+
+        console.log("2");
+
+        // Recuperem o creem una instància del bot
+        let botData = new BotPersistentData().getInstance();
+        let logs = await botData.GetLastLogs(parseInt(msgWords[1]));
+
+        console.log("logs:", logs);
+
         //var logs = await database.arrayGetUserLogs(id)
         // Menú Principal
         let replyMarkup = bot.keyboard([
             [BUTTONS.info.label, BUTTONS.bot.label],
             [BUTTONS.balance.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + logs + `</b>`, { replyMarkup, parseMode });
+
+        let logsFormated = "No logs found";
+        if (logs && Array.isArray(logs) && logs.length > 0) {
+            logsFormated = logs;
+        }
+
+        return bot.sendMessage(id, `<b>` + logsFormated + `</b>`, { replyMarkup, parseMode });
     }
 });
 
@@ -278,10 +309,12 @@ bot.on(BUTTONS.buy.command, async (msg) => {
         // Tot correcte, creem l'ordre
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "buy", pair, REAL_MODE);
-        return bot.sendMessage(id, 
-            `result = ` + JSON.stringify(response, null, "  "),
-            { parseMode, parseMode }
-        );
+
+        // Recuperem o creem una instància del bot
+        let botData = new BotPersistentData().getInstance();
+        await botData.addLog(JSON.stringify(response));
+
+        return bot.sendMessage(id, JSON.stringify(response, null, "  "), { parseMode, parseMode });
     }
 })
 
@@ -314,7 +347,7 @@ bot.on(BUTTONS.buy_test.command, async (msg) => {
     }
 });
 
-// buy
+// sell
 bot.on(BUTTONS.sell.command, async (msg) => {
     let id = msg.from.id;
     
@@ -345,14 +378,16 @@ bot.on(BUTTONS.sell.command, async (msg) => {
         // Tot correcte, creem l'ordre
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "sell", pair, REAL_MODE);
-        return bot.sendMessage(id, 
-            `result = ` + JSON.stringify(response, null, "  "),
-            { parseMode, parseMode }
-        );
+
+        // Recuperem o creem una instància del bot
+        let botData = new BotPersistentData().getInstance();
+        await botData.addLog(JSON.stringify(response));
+
+        return bot.sendMessage(id, JSON.stringify(response, null, "  "), { parseMode, parseMode });
     }
 })
 
-// buy test mode
+// sell test mode
 bot.on(BUTTONS.sell_test.command, async (msg) => {
     let id = msg.from.id;
     

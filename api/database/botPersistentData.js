@@ -94,7 +94,30 @@ class BotPersistentData {
         try {
             let result = await sqlite.run(`update status set status = ` + value + ` where name LIKE 'BOT'`);
             this.active = value;
-            return (result);
+            return result;
+        } catch (err) {
+            console.error(err);
+            return err;
+        }
+    }
+
+    /**
+     * Funció que guarda un log per la data i hora actual
+     * @param {*} text : text que es guardarà en el log
+     */
+    AddLog = async function (text) {
+        try {
+            return await sqlite.run(`INSERT INTO logs (date, log) VALUES (datetime(),'` + text + `')`);
+        } catch (err) {
+            console.error(err);
+            return err;
+        }
+    }
+
+    GetLastLogs = async function (numLogs) {
+        try {
+            let sql = `SELECT * FROM logs ORDER BY date DESC LIMIT ` + numLogs;
+            return await sqlite.all(sql);
         } catch (err) {
             console.error(err);
             return err;

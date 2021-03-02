@@ -116,10 +116,11 @@ var tradingControl = require('./tradingControl');
             orderAdded.result.price = priceToBuy;
 
             return orderAdded;
+
         } else { // sell
 
             // Si estem venent mirem que tinguem vendre el que estem indicant
-            // A la funció getFunds hem de passar la cripto amb una X davant, ex: XXBT
+            // A la funció getFunds hem de passar la cripto amb una X davant, ex: XXBT. Atenció, no sempre, p.e. amb ADA no es posa
             let balance = await kraken.getFunds(pairObject.result.cryptoX);
             if (balance.error && Array.isArray(balance.error) && balance.error.length > 0) {
                 return { "error" : [ "error adding order getting funds: " + balance.error[0] ], "result" : { } }

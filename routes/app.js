@@ -108,7 +108,9 @@ exports.Post = async function (req, res) {
         await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb error " + JSON.stringify(addOrderResult));
         res.status(500).json(addOrderResult);
     } else {
-        logger.info(postId + ": Ordre creada amb dades " + JSON.stringify(addOrderResult));
+        logger.info(postId + ": Ordre creada correctament " + JSON.stringify(addOrderResult));
+        // Guardem log a la BD
+        await botData.addLog(JSON.stringify(addOrderResult));
         await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb dades " + JSON.stringify(addOrderResult));
         res.status(200).json(addOrderResult);
     }

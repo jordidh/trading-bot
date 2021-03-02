@@ -89,7 +89,15 @@ exports.getFunds = async function (currency) {
         //                "ZEUR" : [155.5649],
         //                "XXBT" : [149.9688412800],
         //                "XXRP" : [499889.51600000],
-        //                ...
+        //                "XLTC"
+        //                "XXLM"
+        //                "XETH"
+        //                "XXMR"
+        //                "ADA"   <------------------ NO PORTA X
+        //                "LINK"  <------------------ NO PORTA X
+        //                "KSM"   <------------------ NO PORTA X
+        //                "KSM.S" <------------------ NO PORTA X
+        //                "UNI"   <------------------ NO PORTA X
         //   ]
         let balance = await krakenAPI.api('Balance');
 
@@ -121,7 +129,8 @@ exports.getFunds = async function (currency) {
         let funds = 0;
         for (var i = 0; i < Object.entries(balance.result).length; i++) {
             let asset = Object.entries(balance.result)[i][0];
-            if (asset === currency) {
+            // Comparem per detectar quan asset === currency, quan asset està dins de currency i quan currency està a dins de asset
+            if (asset === currency || asset.includes(currency) || currency.includes(asset)) {
                 funds = parseFloat(Object.entries(balance.result)[i][1]);
             }
         }

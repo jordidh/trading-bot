@@ -79,6 +79,7 @@ exports.getBalance = async function () {
  * }
  * @param {*} currency : "ZEUR" / "ZUSD"
  */
+/*
 exports.getFunds = async function (currency) {
     try {
         // Recuperem el balanç de l'usuari
@@ -152,6 +153,7 @@ exports.getFunds = async function (currency) {
         };
     }
 }
+*/
 
 /**
  * Funció per crear ordres de compra o venda

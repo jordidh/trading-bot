@@ -29,8 +29,8 @@ describe('Trading Control, addOrder', () =>  {
             "error" : [ ],
             "result" : {
                 "exchangePercentage": 1,
-                "funds": 155.56,
-                "fundsMinusCommission": 154.0044,
+                "funds": 155.5649,
+                "fundsMinusCommission": 154.009251,
                 "fundsToBuy": 100,
                 "maxLimitFundsToBuy": 100,
                 "volume": 0.002427573349128744,
@@ -85,6 +85,96 @@ describe('Trading Control, addOrder', () =>  {
         };
         var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBT/EUR", test = false);
         expect(orderAdded).to.deep.equal(orderAddedExpected);
+    });
+});
+
+describe('Trading Control, getFunds', () =>  {
+    it('returns error when balance not exists', async () => {
+        krakenMocked.setBalance({
+            "error" : [],
+            "result" : null
+        });
+
+        let fundsExpected = { 
+            "error" : [ ], 
+            "result" : { 
+                "funds" : 0
+            }
+        };
+
+        let fundsFound = await tradingControl.getFunds(krakenMocked, "XXBT");
+
+        //console.log(fundsFound);
+        expect(fundsFound).to.deep.equal(fundsExpected);
+    });
+
+    it('returns correct balance when currency parameter is equal to balance currency', async () => {
+        krakenMocked.setBalance({
+            "error" : [],
+            "result" : {
+                "ZUSD" : [3415.8014],
+                "ZEUR" : [155.5649],
+                "XXBT" : [149.9688412800],
+                "XXRP" : [499889.51600000],
+                "ADA"  : [1234.8765]
+            }
+        });
+
+        let fundsExpected = { 
+            error: [], 
+            result: { funds: 149.96884128 } 
+        };
+
+        let fundsFound = await tradingControl.getFunds(krakenMocked, "XXBT");
+
+        //console.log(fundsFound);
+        expect(fundsFound).to.deep.equal(fundsExpected);
+    });
+
+    it('returns correct balance when currency parameter includes balance currency', async () => {
+        krakenMocked.setBalance({
+            "error" : [],
+            "result" : {
+                "ZUSD" : [3415.8014],
+                "ZEUR" : [155.5649],
+                "XXBT" : [149.9688412800],
+                "XXRP" : [499889.51600000],
+                "ADA"  : [1234.8765]
+            }
+        });
+
+        let fundsExpected = { 
+            error: [], 
+            result: { funds: 1234.8765 } 
+        };
+
+        let fundsFound = await tradingControl.getFunds(krakenMocked, "XADA");
+
+        //console.log(fundsFound);
+        expect(fundsFound).to.deep.equal(fundsExpected);
+    });
+
+    it('returns correct balance when balance currency includes parameter currency', async () => {
+        krakenMocked.setBalance({
+            "error" : [],
+            "result" : {
+                "ZUSD" : [3415.8014],
+                "ZEUR" : [155.5649],
+                "XXBT" : [149.9688412800],
+                "XXRP" : [499889.51600000],
+                "ADA"  : [1234.8765]
+            }
+        });
+
+        let fundsExpected = { 
+            error: [], 
+            result: { funds: 499889.51600000 } 
+        };
+
+        let fundsFound = await tradingControl.getFunds(krakenMocked, "XRP");
+
+        //console.log(fundsFound);
+        expect(fundsFound).to.deep.equal(fundsExpected);
     });
 });
 

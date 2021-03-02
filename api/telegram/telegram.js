@@ -54,10 +54,12 @@ const BUTTONS = {
         command: '/bot'
     },
     bot_activate: {
-        label: '/activate'
+        label: '🟢 ACTIVA EL BOT',
+        command: '/activate'
     },
     bot_deactivate: {
-        label: '/deactivate'
+        label: '🔴 DESACTIVA EL BOT',
+        command: '/deactivate'
     }
 };
 
@@ -137,6 +139,50 @@ bot.on(BUTTONS.info.command, async (msg) => {
     }
 });
 
+// Activate
+bot.on(BUTTONS.bot_activate.command, async (msg) => {
+    let id = msg.from.id
+    //let first_name = msg.from.first_name
+    let parseMode = 'html';
+
+    // Validación usuario
+    if (id === Number(config.TELEGRAM.USER_ID)) {
+        // Recuperem o creem una instància del bot
+        let botData = new BotPersistentData().getInstance();
+        // Obtenim l'estat del bot (si està actiu o inactiu)
+        await botData.SetStatusBot(true);
+
+        let replyMarkup = bot.keyboard([
+            [BUTTONS.info.label, BUTTONS.bot.label],
+            [BUTTONS.balance.label],
+            [BUTTONS.bot_deactivate.label]
+        ], { resize: true });
+        return bot.sendMessage(id, `<b> 🟢 BOT STATUS: ACTIVATED` + '\n\n' + TEXT.activate_bot_description.label + `</b>`, { replyMarkup, parseMode })
+    }
+});
+
+// Deactivate
+bot.on(BUTTONS.bot_deactivate.command, async (msg) => {
+    let id = msg.from.id
+    //let first_name = msg.from.first_name
+    let parseMode = 'html';
+
+    // Validación usuario
+    if (id === Number(config.TELEGRAM.USER_ID)) {
+        // Recuperem o creem una instància del bot
+        let botData = new BotPersistentData().getInstance();
+        // Obtenim l'estat del bot (si està actiu o inactiu)
+        await botData.SetStatusBot(false);
+
+        let replyMarkup = bot.keyboard([
+            [BUTTONS.info.label, BUTTONS.bot.label],
+            [BUTTONS.balance.label],
+            [BUTTONS.bot_activate.label]
+        ], { resize: true });
+        return bot.sendMessage(id, `<b> 🔴 BOT STATUS: DEACTIVATED` + '\n\n' + TEXT.deactivate_bot_description.label + `</b>`, { replyMarkup, parseMode })
+    }
+});
+
 // Balance
 bot.on(BUTTONS.balance.command, async (msg) => {
     let id = msg.from.id
@@ -178,21 +224,25 @@ bot.on(BUTTONS.bot.command, async (msg) => {
     let id = msg.from.id
     let first_name = msg.from.first_name
     let parseMode = 'html'
-    let replyMarkup
+    //let replyMarkup
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
         // Recuperem o creem una instància del bot
         let botData = new BotPersistentData().getInstance();
-        console.log("botData.Active=" + botData.Active);
+        //console.log("botData.Active=" + botData.Active);
         if (botData.Active === true) {
-            replyMarkup = bot.inlineKeyboard([
-                [bot.inlineButton(TEXT.deactivate_bot.label, { callback: BUTTONS.bot_deactivate.label })]
-            ]);
+            let replyMarkup = bot.keyboard([
+                [BUTTONS.info.label, BUTTONS.bot.label],
+                [BUTTONS.balance.label],
+                [BUTTONS.bot_deactivate.label]
+            ], { resize: true });
             return bot.sendMessage(id, `<b> 🟢 BOT STATUS: ACTIVATED` + '\n\n' + TEXT.activate_bot_description.label + `</b>`, { replyMarkup, parseMode });
         } else {
-            replyMarkup = bot.inlineKeyboard([
-                [bot.inlineButton(TEXT.activate_bot.label, { callback: BUTTONS.bot_activate.label })]
-            ]);
+            let replyMarkup = bot.keyboard([
+                [BUTTONS.info.label, BUTTONS.bot.label],
+                [BUTTONS.balance.label],
+                [BUTTONS.bot_activate.label]
+            ], { resize: true });
             return bot.sendMessage(id, `<b> 🔴 BOT STATUS: DEACTIVATED` + '\n\n' + TEXT.deactivate_bot_description.label + `</b>`, { replyMarkup, parseMode });
         }
     }
@@ -331,7 +381,7 @@ bot.on(BUTTONS.sell_test.command, async (msg) => {
     }
 });
 
-
+/*
 // All callbackQuery Bot
 bot.on('callbackQuery', async (msg) => {
     let id = msg.from.id
@@ -342,6 +392,8 @@ bot.on('callbackQuery', async (msg) => {
         let updated = null;
         // Recuperem o creem una instància del bot
         let botData = new BotPersistentData().getInstance();
+
+        console.log("Telegram command=" + msg.data);
 
         // Actualizaremos el estado del Bot
         switch (msg.data) {
@@ -356,7 +408,7 @@ bot.on('callbackQuery', async (msg) => {
         }
     }
 })
-
+*/
 
 bot.start();
 logger.info({ message: 'SERVIDOR BOT TELEGRAM OK!' })

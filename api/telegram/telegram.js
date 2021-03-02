@@ -151,7 +151,7 @@ bot.on(BUTTONS.balance.command, async (msg) => {
             [BUTTONS.info.label, BUTTONS.bot.label],
             [BUTTONS.balance.label]
         ], { resize: true });
-        return bot.sendMessage(id, JSON.stringify(balance), { replyMarkup, parseMode });
+        return bot.sendMessage(id, JSON.stringify(balance, null, "  "), { replyMarkup, parseMode });
     }
 })
 
@@ -229,7 +229,7 @@ bot.on(BUTTONS.buy.command, async (msg) => {
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "buy", pair, REAL_MODE);
         return bot.sendMessage(id, 
-            `result = ` + JSON.stringify(response),
+            `result = ` + JSON.stringify(response, null, "  "),
             { parseMode, parseMode }
         );
     }
@@ -258,7 +258,7 @@ bot.on(BUTTONS.buy_test.command, async (msg) => {
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "buy", pair, TEST_MODE);
         return bot.sendMessage(id, 
-            `result = ` + JSON.stringify(response),
+            `result = ` + JSON.stringify(response, null, "  "),
             { parseMode, parseMode }
         );
     }
@@ -296,7 +296,7 @@ bot.on(BUTTONS.sell.command, async (msg) => {
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "sell", pair, REAL_MODE);
         return bot.sendMessage(id, 
-            `result = ` + JSON.stringify(response),
+            `result = ` + JSON.stringify(response, null, "  "),
             { parseMode, parseMode }
         );
     }
@@ -325,7 +325,7 @@ bot.on(BUTTONS.sell_test.command, async (msg) => {
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "sell", pair, TEST_MODE);
         return bot.sendMessage(id, 
-            `result = ` + JSON.stringify(response),
+            `result = ` + JSON.stringify(response, null, "  "),
             { parseMode, parseMode }
         );
     }

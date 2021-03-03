@@ -381,7 +381,7 @@ bot.on(BUTTONS.sell.command, async (msg) => {
 
         // Recuperem o creem una instància del bot
         let botData = new BotPersistentData().getInstance();
-        await botData.addLog(JSON.stringify(response));
+        await botData.AddLog(JSON.stringify(response));
 
         return bot.sendMessage(id, JSON.stringify(response, null, "  "), { parseMode, parseMode });
     }

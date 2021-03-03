@@ -110,7 +110,7 @@ exports.Post = async function (req, res) {
     } else {
         logger.info(postId + ": Ordre creada correctament " + JSON.stringify(addOrderResult));
         // Guardem log a la BD
-        await botData.addLog(JSON.stringify(addOrderResult));
+        await botData.AddLog(JSON.stringify(addOrderResult));
         await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb dades " + JSON.stringify(addOrderResult));
         res.status(200).json(addOrderResult);
     }

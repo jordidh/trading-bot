@@ -224,6 +224,71 @@ describe('Trading Control, convertPair', () =>  {
     });
 });
 
+describe('Trading Control, formatLogs', () =>  {
+    it('formats logs successfully if logs has the log columns empty', async () => {
+        let logsFormattedExpected = '💚 - 1 - 2021-03-03 10:17:59 - \n' +
+            '❤ - 2 - 2021-03-03 10:17:59 - { "error" : [ "error desconegut" ], "result" : { } }\n';
+
+        let logs = [
+            {
+                id: 1,
+                date: '2021-03-03 10:17:59',
+                log: ''
+            },
+            {
+                id: 2,
+                date: '2021-03-03 10:17:59',
+                log: '{ "error" : [ "error desconegut" ], "result" : { } }'
+            }
+        ];
+
+        let result = await tradingControl.formatLogs(logs);
+        expect(result).to.deep.equal(logsFormattedExpected);
+    });
+
+    it('formats logs successfully if logs has a string into the log columns', async () => {
+        let logsFormattedExpected = '💚 - 1 - 2021-03-03 10:17:59 - string indeterminat\n' +
+            '❤ - 2 - 2021-03-03 10:17:59 - { "error" : [ "error desconegut" ], "result" : { } }\n';
+
+        let logs = [
+            {
+                id: 1,
+                date: '2021-03-03 10:17:59',
+                log: 'string indeterminat'
+            },
+            {
+                id: 2,
+                date: '2021-03-03 10:17:59',
+                log: '{ "error" : [ "error desconegut" ], "result" : { } }'
+            }
+        ];
+
+        let result = await tradingControl.formatLogs(logs);
+        expect(result).to.deep.equal(logsFormattedExpected);
+    });
+
+    it('formats logs successfully if logs has the expected structure, with a JSON into the log column', async () => {
+        let logsFormattedExpected = '💚 - 1 - 2021-03-03 10:17:59 - { "error" : [], "result" : { } }\n' +
+            '❤ - 2 - 2021-03-03 10:17:59 - { "error" : [ "error desconegut" ], "result" : { } }\n';
+
+        let logs = [
+            {
+                id: 1,
+                date: '2021-03-03 10:17:59',
+                log: '{ "error" : [], "result" : { } }'
+            },
+            {
+                id: 2,
+                date: '2021-03-03 10:17:59',
+                log: '{ "error" : [ "error desconegut" ], "result" : { } }'
+            }
+        ];
+
+        let result = await tradingControl.formatLogs(logs);
+        expect(result).to.deep.equal(logsFormattedExpected);
+    });
+});
+
 /*
 describe('Trading Control, balance', () =>  {
     it('returns internal values creating a BUY Order in test mode', async () => {

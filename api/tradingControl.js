@@ -112,7 +112,7 @@ var tradingControl = require('./tradingControl');
             }
 
             // Afegim el price al reusultat retornat per kraken
-            console.log(orderAdded);
+            //console.log(orderAdded);
             orderAdded.result.price = priceToBuy;
 
             return orderAdded;
@@ -256,13 +256,18 @@ exports.formatLogs = async function (logs) {
     if (logs && Array.isArray(logs) && logs.length > 0) {
         logsFormated = "";
         for (let i = 0; i < logs.length; i++) {
-            let jsonLog = JSON.parse(logs[i].log);
+            let jsonLog = "";
+            try {
+                jsonLog = JSON.parse(logs[i].log);
+            } catch(err) {
+                jsonLog = logs[i].log;
+            }
             if (jsonLog && jsonLog.error && Array.isArray(jsonLog.error) && jsonLog.error.length > 0) {
                 // log amb error: ❤
                 logsFormated += "❤ - " + logs[i].id + " - " + logs[i].date + " - " + logs[i].log + "\n";
             } else {
                 // log ok: 💚
-                logsFormated += "💚 - " + logs[i].date + " - " + logs[i].log + "\n";
+                logsFormated += "💚 - " + logs[i].id + " - " + logs[i].date + " - " + logs[i].log + "\n";
             }
             // money with wings (losing money): 💸
             // money bag: 💰

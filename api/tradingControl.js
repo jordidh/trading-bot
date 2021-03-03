@@ -245,6 +245,34 @@ exports.getFunds = async function (kraken, currency) {
 }
 
 /**
+ * Funció que formateja els logs recuperats de la BD en un string
+ * @param {*} logs : files de logs recuperades de la BD amb els camps [ { id, date, log }, ... ]
+ */
+exports.formatLogs = async function (logs) {
+    // Formategem els logs
+    // Suposem que els logs tidran un camp de text amb nom log que guardarà el resultat de cridar a tradingControl.addOrder
+    // Aquest resultat ha de tenir el format: { "error" : [], "result" : { } }
+    let logsFormated = "No logs found";
+    if (logs && Array.isArray(logs) && logs.length > 0) {
+        logsFormated = "";
+        for (let i = 0; i < logs.length; i++) {
+            let jsonLog = JSON.parse(logs[i].log);
+            if (jsonLog && jsonLog.error && Array.isArray(jsonLog.error) && jsonLog.error.length > 0) {
+                // log amb error: ❤
+                logsFormated += "❤ - " + logs[i].id + " - " + logs[i].date + " - " + logs[i].log + "\n";
+            } else {
+                // log ok: 💚
+                logsFormated += "💚 - " + logs[i].date + " - " + logs[i].log + "\n";
+            }
+            // money with wings (losing money): 💸
+            // money bag: 💰
+        }
+    }
+
+    return logsFormated;
+}
+
+/**
  * A partir d'un pair en pormat XBT/EUR retorna un objecte amb les diferents variants:
  * {
  *   "error" : []

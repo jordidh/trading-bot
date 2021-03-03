@@ -29,27 +29,25 @@ class BotPersistentData {
 
     CheckDatabaseTables = async function() {
         try {
-            console.log("Database checking ...");
-
             // Tabla logs
             let sqlRes = await sqlite.run(`CREATE TABLE IF NOT EXISTS logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date DATETIME NOT NULL,
-                log text NOT NULL            
+                log TEXT NOT NULL            
             )`);
     
             // Tabla ngrok
             sqlRes = await sqlite.run(`CREATE TABLE IF NOT EXISTS ngrok (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                local text,
-                http text,
-                https text
+                local TEXT,
+                http TEXT,
+                https TEXT
             )`);
     
             // Tabla status
             sqlRes = await sqlite.run(`CREATE TABLE IF NOT EXISTS status (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name text,
+                name TEXT,
                 status bool,
                 updated DATETIME
             )`);
@@ -57,16 +55,22 @@ class BotPersistentData {
             // Consultaremos la tabla status
             sqlRes = await sqlite.get(`select count(*) as count from status`);
             //console.log(sqlRes);
+            let resInsertingData = "";
             if (sqlRes.count == 0) {
                 // Creem els registres necessaris per l'aplicació
-                console.log("Insertem a la taula status les dades inicials");
                 await sqlite.run(`INSERT INTO status (name,status,updated) VALUES ('BOT', true, '` + moment().format("DD/MM/YYYY HH:mm:ss") + `')`);
+                resInsertingData = "Initial data inserted into database";
             }
 
-            console.log("Database checked successfully");
+            return {
+                "error": [ ],
+                "result": [ "Database checked successfully", resInsertingData ]
+            }
         } catch (err) {
-            console.error("Database checked with errors ", err);
-            return null;
+            return {
+                "error": [ "Database checked with errors " + err.message ],
+                "result": [ ]
+            }
         }
     }
 
@@ -79,10 +83,15 @@ class BotPersistentData {
             //console.log(result);
             this.active = (result[0].status === 1);
             //console.log("this.active=" + this.active);
-            return result;
+            return {
+                "error" : [],
+                "result": result
+            }
         } catch (err) {
-            console.error(err);
-            return err;
+            return {
+                "error" : [ "Getting status bot with errors" + err.message ],
+                "result" : [ ]
+            }
         }
     }
 

@@ -10,7 +10,6 @@ var db = new sqlite3.Database(DATABASE_PATH, (err) => {
         console.error("Error in SQLite DB opening ", err);
         return;
     }
-    console.log('Connected to SQlite database.');
 });
 
 exports.db = db;

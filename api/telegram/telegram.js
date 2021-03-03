@@ -4,6 +4,7 @@
  * Module dependencies
  */
 var config = require('../../config/config');
+var pjson = require('../../package.json');
 var logger = require('../logger');
 const TeleBot = require('telebot');
 var kraken = require('../exchanges/kraken/apis');
@@ -130,12 +131,13 @@ bot.on(BUTTONS.info.command, async (msg) => {
 
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
+        let botInfo = pjson.name + " " + pjson.version;
         // Menú Principal
         let replyMarkup = bot.keyboard([
             [BUTTONS.info.label, BUTTONS.bot.label],
             [BUTTONS.balance.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label, { replyMarkup, parseMode })
+        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label + "\n\n" + botInfo, { replyMarkup, parseMode })
     }
 });
 
@@ -217,8 +219,6 @@ bot.on(BUTTONS.logs.command, async (msg) => {
             );
         }
 
-        console.log("1");
-
         if (isNaN(msgWords[1]) || isNaN(parseInt(msgWords[1])) ) {
             return bot.sendMessage(id, 
                 "Error, el sogon paràmetre no és un numèric",
@@ -226,13 +226,12 @@ bot.on(BUTTONS.logs.command, async (msg) => {
             );
         }
 
-        console.log("2");
-
         // Recuperem o creem una instància del bot
         let botData = new BotPersistentData().getInstance();
         let logs = await botData.GetLastLogs(parseInt(msgWords[1]));
 
-        console.log("logs:", logs);
+        // Formategem els logs
+        let logsFormated = await tradingControl.formatLogs(logs);
 
         //var logs = await database.arrayGetUserLogs(id)
         // Menú Principal
@@ -240,12 +239,6 @@ bot.on(BUTTONS.logs.command, async (msg) => {
             [BUTTONS.info.label, BUTTONS.bot.label],
             [BUTTONS.balance.label]
         ], { resize: true });
-
-        let logsFormated = "No logs found";
-        if (logs && Array.isArray(logs) && logs.length > 0) {
-            logsFormated = logs;
-        }
-
         return bot.sendMessage(id, `<b>` + logsFormated + `</b>`, { replyMarkup, parseMode });
     }
 });
@@ -310,9 +303,9 @@ bot.on(BUTTONS.buy.command, async (msg) => {
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "buy", pair, REAL_MODE);
 
-        // Recuperem o creem una instància del bot
+        // Guardem el log  la BD
         let botData = new BotPersistentData().getInstance();
-        await botData.addLog(JSON.stringify(response));
+        await botData.AddLog(JSON.stringify(response));
 
         return bot.sendMessage(id, JSON.stringify(response, null, "  "), { parseMode, parseMode });
     }
@@ -379,7 +372,7 @@ bot.on(BUTTONS.sell.command, async (msg) => {
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "sell", pair, REAL_MODE);
 
-        // Recuperem o creem una instància del bot
+        // Guardem el log  la BD
         let botData = new BotPersistentData().getInstance();
         await botData.AddLog(JSON.stringify(response));
 

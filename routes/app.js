@@ -105,12 +105,16 @@ exports.Post = async function (req, res) {
     // Retornem el resultat
     if (addOrderResult.error && Array.isArray(addOrderResult) && addOrderResult.length > 0) {
         logger.error(postId + ": Ordre creada amb error " + JSON.stringify(addOrderResult));
+        // Guardem el log  la BD
+        await botData.AddLog(JSON.stringify(addOrderResult));
+        // Enviem error a telegram
         await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb error " + JSON.stringify(addOrderResult));
         res.status(500).json(addOrderResult);
     } else {
         logger.info(postId + ": Ordre creada correctament " + JSON.stringify(addOrderResult));
         // Guardem log a la BD
         await botData.AddLog(JSON.stringify(addOrderResult));
+        // Enviem confirmació a telegram
         await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb dades " + JSON.stringify(addOrderResult));
         res.status(200).json(addOrderResult);
     }

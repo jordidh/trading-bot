@@ -289,32 +289,111 @@ describe('Trading Control, formatLogs', () =>  {
     });
 });
 
-/*
-describe('Trading Control, balance', () =>  {
-    it('returns internal values creating a BUY Order in test mode', async () => {
-        krakenMocked.setBalance({
-            "error" : [],
-            "result" : {
-                "ZUSD" : [3415.8014],
-                "ZEUR" : [155.5649],
-                "XXBT" : [149.9688412800],
-                "XXRP" : [499889.51600000]
-            }
-        });
-
-        var orderAddedExpected = {
-            "error" : [ ],
-            "result" : {
-                "exchangePercentage": 1,
-                "funds": 155.56,
-                "fundsMinusCommission": 155.55357161223967,
-                "fundsToBuy": 100,
-                "maxLimitFundsToBuy": 100,
-                "volume": 0.002427573349128744
-            }
+describe('Trading Control, calculateProfit', () =>  {
+    it('returns error if the buy order descr attribute has not the correct format', async () => {
+        var resultExpected = {
+            "error" : [ "Buy order descr property must have 5 elements and has 3" ],
+            "result" : { }
         };
-        var orderAdded = await tradingControl.addOrder(krakenMocked, "buy", "XBTEUR", test = true);
-        expect(orderAdded).to.deep.equal(orderAddedExpected);
+
+        var buyOrder = {
+            "descr": { "order":"buy 0.00114940 XBTEUR" },  //<--Format ordre incorrecte
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        var sellOrder = {
+            "descr": { "order":"sell 0.00359600 XBTEUR @ market" },
+            "txid":["OYSDDM-46HXD-XG6JMQ"],
+            "price":42465.1
+        };
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if the buy order descr attribute has not the correct format', async () => {
+        var resultExpected = {
+            "error" : [ "Buy order descr volume is not a number XXXXXX" ],
+            "result" : { }
+        };
+
+        var buyOrder = {
+            "descr": { "order":"buy XXXXXX XBTEUR @ market" },  //<--- el valor de compra no és un numèric
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        var sellOrder = {
+            "descr": { "order":"sell 0.00359600 XBTEUR @ market" },
+            "txid":["OYSDDM-46HXD-XG6JMQ"],
+            "price":42465.1
+        };
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if the buy order descr attribute has not the correct format', async () => {
+        var resultExpected = {
+            "error" : [ "Sell order descr property must have 5 elements and has 6" ],
+            "result" : { }
+        };
+
+        var buyOrder = {
+            "descr": { "order":"buy 0.00114940 XBTEUR @ market" },
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        var sellOrder = {
+            "descr": { "order":"sell 0.00359600 XBTEUR @ market incorrectvalue" },  //<--- format incorrecte
+            "txid":["OYSDDM-46HXD-XG6JMQ"],
+            "price":42465.1
+        };
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if the buy order descr attribute has not the correct format', async () => {
+        var resultExpected = {
+            "error" : [ "Sell order descr volume is not a number nnnn" ],
+            "result" : { }
+        };
+
+        var buyOrder = {
+            "descr": { "order":"buy 0.00114940 XBTEUR @ market" },
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        var sellOrder = {
+            "descr": { "order":"sell nnnn XBTEUR @ market" },  //<--- volume is not a number
+            "txid":["OYSDDM-46HXD-XG6JMQ"],
+            "price":42465.1
+        };
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns the profit successfully', async () => {
+        var resultExpected = {
+            "error" : [ ],
+            "result" : 143.64126635999997
+        };
+
+        var buyOrder = {
+            "descr": { "order":"buy 0.00114940 XBTEUR @ market" },
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        //49,99958964
+        var sellOrder = {
+            "descr": { "order":"sell 0.0045600 XBTEUR @ market" },
+            "txid":["OYSDDM-46HXD-XG6JMQ"],
+            "price":42465.1
+        };
+        //193,640856
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
     });
 });
-*/

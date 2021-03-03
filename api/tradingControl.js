@@ -245,6 +245,68 @@ exports.getFunds = async function (kraken, currency) {
 }
 
 /**
+ * Funció que calcula el benefici entre una ordre de compra i venda
+ * @param {*} buyOrder : ordre de compra en format {
+ *          "descr": { "order":"buy 0.00114940 XBTEUR @ market"},
+ *          "txid":["OG5AH5-B4KHL-ZWTK7O"],
+ *          "price":43500.6
+ *      }
+ *  
+ * @param {*} sellOrder : ordre de venda en format {
+ *          "descr": {"order":"sell 0.00359600 XBTEUR @ market"},
+ *          "txid":["OYSDDM-46HXD-XG6JMQ"],
+ *          "price":42465.1
+ *      }
+ */
+exports.calculateProfit = async function(buyOrder, sellOrder) {
+    // Extreiem el volum de compra de la info de la ordre
+    let buyOrderItems = buyOrder.descr.order.split(' ');
+    if (buyOrderItems.length != 5) {
+        return {
+            "error" : [ "Buy order descr property must have 5 elements and has " + buyOrderItems.length ],
+            "result" : {}
+        };
+    }
+    if (isNaN(buyOrderItems[1]) || isNaN(parseFloat(buyOrderItems[1])) ) {
+        return {
+            "error" : [ "Buy order descr volume is not a number " + buyOrderItems[1] ],
+            "result" : {}
+        }
+    }
+    let buyVolume = parseFloat(buyOrderItems[1]);
+
+    // Calculem el preu total de compra
+    let totalBuyPrice = buyOrder.price * buyVolume;
+
+    // Extriem el volum de venda de la info de la ordre
+    let sellOrderItems = sellOrder.descr.order.split(' ');
+    if (sellOrderItems.length != 5) {
+        return {
+            "error" : [ "Sell order descr property must have 5 elements and has " + sellOrderItems.length ],
+            "result" : {}
+        };
+    }
+    if (isNaN(sellOrderItems[1]) || isNaN(parseFloat(sellOrderItems[1])) ) {
+        return {
+            "error" : [ "Sell order descr volume is not a number " + sellOrderItems[1] ],
+            "result" : {}
+        }
+    }
+    let sellVolume = parseFloat(sellOrderItems[1])
+    ;
+    // Calculem el preu total de venda
+    let totalSellPrice = sellOrder.price * sellVolume;
+
+    // Calculem el benefici
+    let profit = totalSellPrice - totalBuyPrice;
+
+    return {
+        "error" : [],
+        "result" : profit
+    };
+}
+
+/**
  * Funció que formateja els logs recuperats de la BD en un string
  * @param {*} logs : files de logs recuperades de la BD amb els camps [ { id, date, log }, ... ]
  */

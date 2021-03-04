@@ -259,18 +259,49 @@ exports.getFunds = async function (kraken, currency) {
  *      }
  */
 exports.calculateProfit = async function(buyOrder, sellOrder) {
+    // Validem que les dades d'entrada s'ón correctes
+    if (buyOrder === undefined || buyOrder === null || typeof buyOrder != "object") {
+        return {
+            "error" : [ "Buy order is not defined" ],
+            "result" : -1
+        };
+    }
+    if (buyOrder.descr === undefined || typeof buyOrder.descr != "object" || 
+        buyOrder.descr.order === undefined || typeof buyOrder.descr.order != "string" || 
+        buyOrder.price === undefined || typeof buyOrder.price != "number" ) {
+        return {
+            "error" : [ "Buy order has bad structure" ],
+            "result" : -1
+        };
+    }
+
+    if (sellOrder === undefined || sellOrder === null || typeof sellOrder != "object") {
+        return {
+            "error" : [ "Sell order is not defined" ],
+            "result" : -1
+        };
+    }
+    if (sellOrder.descr === undefined || typeof sellOrder.descr != "object" || 
+        sellOrder.descr.order === undefined || typeof sellOrder.descr.order != "string" || 
+        sellOrder.price === undefined || typeof sellOrder.price != "number" ) {
+        return {
+            "error" : [ "Sell order has bad structure" ],
+            "result" : -1
+        };
+    }
+
     // Extreiem el volum de compra de la info de la ordre
     let buyOrderItems = buyOrder.descr.order.split(' ');
     if (buyOrderItems.length != 5) {
         return {
             "error" : [ "Buy order descr property must have 5 elements and has " + buyOrderItems.length ],
-            "result" : {}
+            "result" : -1
         };
     }
     if (isNaN(buyOrderItems[1]) || isNaN(parseFloat(buyOrderItems[1])) ) {
         return {
             "error" : [ "Buy order descr volume is not a number " + buyOrderItems[1] ],
-            "result" : {}
+            "result" : -1
         }
     }
     let buyVolume = parseFloat(buyOrderItems[1]);
@@ -283,13 +314,13 @@ exports.calculateProfit = async function(buyOrder, sellOrder) {
     if (sellOrderItems.length != 5) {
         return {
             "error" : [ "Sell order descr property must have 5 elements and has " + sellOrderItems.length ],
-            "result" : {}
+            "result" : -1
         };
     }
     if (isNaN(sellOrderItems[1]) || isNaN(parseFloat(sellOrderItems[1])) ) {
         return {
             "error" : [ "Sell order descr volume is not a number " + sellOrderItems[1] ],
-            "result" : {}
+            "result" : -1
         }
     }
     let sellVolume = parseFloat(sellOrderItems[1])

@@ -290,10 +290,86 @@ describe('Trading Control, formatLogs', () =>  {
 });
 
 describe('Trading Control, calculateProfit', () =>  {
+    it('returns error if the buy order not exists', async () => {
+        var resultExpected = {
+            "error" : [ "Buy order is not defined" ],
+            "result" : -1
+        };
+
+        var buyOrder = undefined;
+        var sellOrder = {
+            "descr": { "order":"sell 0.00359600 XBTEUR @ market" },
+            "txid":["OYSDDM-46HXD-XG6JMQ"],
+            "price":42465.1
+        };
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if the sell order not exists', async () => {
+        var resultExpected = {
+            "error" : [ "Sell order is not defined" ],
+            "result" : -1
+        };
+
+        var buyOrder = {
+            "descr": { "order":"buy 0.00114940 XBTEUR @ market" },
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        var sellOrder = undefined;
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if the buy order has invalid structure', async () => {
+        var resultExpected = {
+            "error" : [ "Buy order has bad structure" ],
+            "result" : -1
+        };
+
+        var buyOrder = {
+            // falta descr
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        var sellOrder = {
+            "descr": { "order":"sell 0.00359600 XBTEUR @ market" },
+            "txid":["OYSDDM-46HXD-XG6JMQ"],
+            "price":42465.1
+        };
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
+    it('returns error if the sell order has invalid structure', async () => {
+        var resultExpected = {
+            "error" : [ "Sell order has bad structure" ],
+            "result" : -1
+        };
+
+        var buyOrder = {
+            "descr": { "order":"buy 0.00114940 XBTEUR @ market" },
+            "txid":["OG5AH5-B4KHL-ZWTK7O"],
+            "price":43500.6
+        };
+        var sellOrder = {
+            "descr": { "order":"sell 0.00359600 XBTEUR @ market" },
+            "txid":["OYSDDM-46HXD-XG6JMQ"]
+            // falta price
+        };
+
+        var result = await tradingControl.calculateProfit(buyOrder, sellOrder);
+        expect(result).to.deep.equal(resultExpected);
+    });
+
     it('returns error if the buy order descr attribute has not the correct format', async () => {
         var resultExpected = {
             "error" : [ "Buy order descr property must have 5 elements and has 3" ],
-            "result" : { }
+            "result" : -1
         };
 
         var buyOrder = {
@@ -314,7 +390,7 @@ describe('Trading Control, calculateProfit', () =>  {
     it('returns error if the buy order descr attribute has not the correct format', async () => {
         var resultExpected = {
             "error" : [ "Buy order descr volume is not a number XXXXXX" ],
-            "result" : { }
+            "result" : -1
         };
 
         var buyOrder = {
@@ -335,7 +411,7 @@ describe('Trading Control, calculateProfit', () =>  {
     it('returns error if the buy order descr attribute has not the correct format', async () => {
         var resultExpected = {
             "error" : [ "Sell order descr property must have 5 elements and has 6" ],
-            "result" : { }
+            "result" : -1
         };
 
         var buyOrder = {
@@ -356,7 +432,7 @@ describe('Trading Control, calculateProfit', () =>  {
     it('returns error if the buy order descr attribute has not the correct format', async () => {
         var resultExpected = {
             "error" : [ "Sell order descr volume is not a number nnnn" ],
-            "result" : { }
+            "result" : -1
         };
 
         var buyOrder = {

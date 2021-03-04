@@ -132,6 +132,19 @@ class BotPersistentData {
             return err;
         }
     }
+
+    GetLastBuyOrderWithPair = async function (pair) {
+        try {
+            let sql = `SELECT * 
+            FROM logs 
+            WHERE log LIKE '%"order":"buy %' AND log LIKE '% `+ pair + ` %' 
+            ORDER BY date DESC LIMIT 1`;
+            return await sqlite.get(sql);
+        } catch (err) {
+            console.error(err);
+            return err;
+        }
+    }
 }
 
 class Singleton {

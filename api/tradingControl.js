@@ -161,7 +161,7 @@ var tradingControl = require('./tradingControl');
             }
 
             // Afegim el price al reusultat retornat per kraken
-            console.log(orderAdded);
+            //console.log(orderAdded);
             orderAdded.result.price = priceToSell;
 
             return orderAdded;

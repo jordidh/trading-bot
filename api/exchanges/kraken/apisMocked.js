@@ -3,6 +3,14 @@
 /**
  * Public properties
  */
+var m_result = {
+    "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
+    "price" : 2.345
+};
+exports.setResult = function(value) {
+    m_result = value;
+}
+
 var m_balance = {
     "error" : [],
     "result" : {
@@ -140,8 +148,8 @@ exports.addOrder = async function (pair, volume, action) {
             "error" : [],
             "result" : {
                 "descr" : [ { "order" : action + " " + volume + " " + pair + " @ market" } ],
-                "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
-                "price" : 2.345
+                "txid" : m_result.txid,
+                "price" : m_result.price
             }
         };
         //console.log(msg);

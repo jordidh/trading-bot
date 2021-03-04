@@ -7,6 +7,7 @@ const frisby = require('frisby');
 process.env.NODE_ENV = 'test';
 
 describe('Buy and Sell Posts', function() {
+    /*
     it('should fail if body is empty', function () {
         return frisby.post('http://localhost:4401/')
             //.inspectJSON()
@@ -51,5 +52,56 @@ describe('Buy and Sell Posts', function() {
             //.inspectJSON()
             .expect("status", 400)
             .expect("jsonStrict", { error: [ "request body must have property \"pair\"" ] });
+    });
+
+    it('should create a buy order successfully', function() {
+        return frisby.post('http://localhost:4401/', {
+            action : "buy",
+            pair: "XBT/EUR",
+            token : "TEST_TOKEN",
+            test : "mock-kraken"
+        })
+        //.inspectJSON()
+        .expect("status", 200)
+        .expect("jsonStrict", {
+            "error": [],
+            "result": {
+                "descr": [
+                    {
+                        "order": "buy 0.002427573 XBTEUR @ market"
+                    }
+                ],
+                "txid": [
+                    "OAVY7T-MV5VK-KHDF5X"
+                ],
+                "price": 41193.4
+            }
+        });
+    });
+*/
+    it('should create a sell order successfully', function() {
+        return frisby.post('http://localhost:4401/', {
+            action : "sell",
+            pair: "XBT/EUR",
+            token : "TEST_TOKEN",
+            test : "mock-kraken"
+        })
+        //.inspectJSON()
+        .expect("status", 200)
+        .expect("jsonStrict", {
+            "error" : [],
+            "result" : {
+                "descr" : [
+                    {
+                        "order": "sell 0.002427573 XBTEUR @ market"
+                    }
+                ],
+                "txid" : [
+                    "OAVY7T-MV5VK-KHDF5X"
+                ],
+                "price" : 41193.4,
+                "profit" : 200
+            }
+        });
     });
 });

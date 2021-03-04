@@ -7,14 +7,16 @@ const logger = require('../api/logger');
 const moment = require('moment');
 const { v1: uuidv1 } = require('uuid');
 const kraken = require('../api/exchanges/kraken/apis');
+const krakenMoked = require('../api/exchanges/kraken/apisMocked');
 const tradingControl = require('../api/tradingControl');
 //const TeleBot = require('telebot')
-const telegramCommands = require('../api/telegram/commands');
+//const telegramCommands = require('../api/telegram/commands');
+var telegram = require('../api/telegram/telegram');
 const config = require('../config/config');
 var BotPersistentData = require('../api/database/botPersistentData');
 
-const TEST_MODE = true;
-const REAL_MODE = false;
+const TEST_INTERNAL_VALUES = true;
+const EXECUTE_ORDER = false;
 
 /**
  * Package Functions
@@ -44,49 +46,49 @@ exports.Post = async function (req, res) {
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
     logger.info(postId + `: Rebut POST des de ` + ip + ` amb les dades ` + JSON.stringify(req.body));
-    await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, 
+    await telegram.sendMessage(config.TELEGRAM.USER_ID, 
         `Rebut POST des de ` + ip + ` amb les dades ` + JSON.stringify(req.body)
     );
 
     // Validem les dades rebudes
     if (typeof req.body === "undefined") {
         logger.info(postId + ": request body can not be undefined");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body can not be undefined");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "request body can not be undefined");
         return res.status(400).json({ error: [ "request body can not be undefined" ] });
     }
     if (req.body === null) {
         logger.info(postId + ": request body can not be null");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body can not be null");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "request body can not be null");
         return res.status(400).json({ error: [ "request body can not be null" ] });
     }
     if (Object.keys(req.body).length <= 0) {
         logger.info(postId + ": request body can not be empty");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body can not be empty");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "request body can not be empty");
         return res.status(400).json({ error: [ "request body can not be empty" ] });
     }
     if (!req.body.hasOwnProperty("token")) {
         logger.info(postId + ": request body must have property \"token\"");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"token\"");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"token\"");
         return res.status(400).json({ error: [ "request body must have property \"token\"" ] });
     }
     if (req.body.token != config.APP_TOKEN) {
         logger.info(postId + ": Token invalid");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Token invalid");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "Token invalid");
         return res.status(400).json({ error: [ "Token invalid" ] });
     }
     if (!req.body.hasOwnProperty("action")) {
         logger.info(postId + ": request body must have property \"action\"");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"action\"");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"action\"");
         return res.status(400).json({ error: [ "request body must have property \"action\"" ] });
     }
     if (req.body.action != "buy" && req.body.action != "sell") {
         logger.info(postId + ": request body property \"action\" only accepts values \"buy\" or \"sell\"");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body property \"action\" only accepts values \"buy\" or \"sell\"");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "request body property \"action\" only accepts values \"buy\" or \"sell\"");
         return res.status(400).json({ error: [ "request body property \"action\" only accepts values \"buy\" or \"sell\"" ] });
     }
     if (!req.body.hasOwnProperty("pair")) {
         logger.info(postId + ": request body must have property \"pair\"");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"pair\"");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "request body must have property \"pair\"");
         return res.status(400).json({ error: [ "request body must have property \"pair\"" ] });
     }
 
@@ -95,12 +97,45 @@ exports.Post = async function (req, res) {
     // Obtenim l'estat del bot (si està actiu o inactiu)
     if (botData.Active === false) {
         logger.info(postId + ": bot inactive");
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "bot inactive");
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "bot inactive");
         return res.status(400).json({ error: [ "bot inactive" ] });
     }
 
     // Creem l'ordre
-    let addOrderResult = await tradingControl.addOrder(kraken, req.body.action, req.body.pair, REAL_MODE);
+    let addOrderResult = {};
+    // Si estem testejant l'api cridem a la versió mokejada de kraken
+    if (req.body.test && req.body.test === "mock-kraken") {
+        // Compra per testejar
+        addOrderResult = await tradingControl.addOrder(krakenMoked, req.body.action, req.body.pair, EXECUTE_ORDER);
+    } else {
+        // Compra real
+        addOrderResult = await tradingControl.addOrder(kraken, req.body.action, req.body.pair, EXECUTE_ORDER);
+    }
+
+    // En el moment de vendre busquem l'anterior ordre de compre pel mateix price i calculem el benefici
+    if (req.body.action === "sell") {
+        // Convertim el pair al format en que es guarda a l'ordre (p.e. de XBT/EUR a XBTEUR)
+        let pairObject = await tradingControl.convertPair(req.body.pair);
+        // Recuperem l'última ordred de comprea del pair
+        // Si estem testejant l'api cridem a la versió mokegem la ordre recuperada
+        let buyOrder = {};
+        if (req.body.test && req.body.test === "mock-kraken") {
+            buyOrder = { 
+                "error" : [], 
+                "result" : { 
+                    "descr" : "sell 0.002427573 " + pairObject.pairSimple + " @ market", 
+                    "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
+                    "price" : 42193.4
+                }
+            };
+        } else {
+            buyOrder = await botData.GetLastBuyOrderWithPair(pairObject.pairSimple);
+        }
+        // Calculem el profit
+        let profit = await tradingControl.calculateProfit(buyOrder, addOrderResult);
+        // Guardem el profit a la ordre, per guardar-ho en el log
+        addOrderResult.result.profit = profit.result;
+    }
 
     // Retornem el resultat
     if (addOrderResult.error && Array.isArray(addOrderResult) && addOrderResult.length > 0) {
@@ -108,14 +143,14 @@ exports.Post = async function (req, res) {
         // Guardem el log  la BD
         await botData.AddLog(JSON.stringify(addOrderResult));
         // Enviem error a telegram
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb error " + JSON.stringify(addOrderResult));
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb error " + JSON.stringify(addOrderResult));
         res.status(500).json(addOrderResult);
     } else {
         logger.info(postId + ": Ordre creada correctament " + JSON.stringify(addOrderResult));
         // Guardem log a la BD
         await botData.AddLog(JSON.stringify(addOrderResult));
         // Enviem confirmació a telegram
-        await telegramCommands.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb dades " + JSON.stringify(addOrderResult));
+        await telegram.sendMessage(config.TELEGRAM.USER_ID, "Ordre creada amb dades " + JSON.stringify(addOrderResult));
         res.status(200).json(addOrderResult);
     }
 };

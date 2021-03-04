@@ -67,10 +67,10 @@ const BUTTONS = {
 const TEXT = {
     info: {
         label: `, Comandes disponibles:\n\n` + 
-               `<b>\/balance</b>` +
+               `<b>\/balance</b>\n` +
                `<b>\/buy [pair]</b>, Ex: /buy XBT/EUR, /buy XBT/USD, /buy ETH/EUR, /buy ADA/EUR, /buy USDT/EUR\n` +
-               `<b>\/buytest [pair]</b>, Ex: /buytest XBT/EUR\n` +
                `<b>\/sell [pair]</b>, Ex: /sell XBT/EUR\n` +
+               `<b>\/buytest [pair]</b>, Ex: /buytest XBT/EUR\n` +
                `<b>\/selltest [pair]</b>, Ex: /selltest XBT/EUR\n` +
                `\n` +
                `<b>/activate</b>, s'activa la compra/venda automàtica amb POST\n` +
@@ -375,6 +375,15 @@ bot.on(BUTTONS.sell.command, async (msg) => {
         // Tot correcte, creem l'ordre
         let pair = msgWords[1]; //"XBTEUR"
         let response = await tradingControl.addOrder(kraken, "sell", pair, REAL_MODE);
+
+        // Convertim el pair al format en que es guarda a l'ordre (p.e. de XBT/EUR a XBTEUR)
+        let pairObject = await convertPair(pair);
+        // Recuperem l'última ordred de comprea del pair
+        let buyOrder = await botData.GetLastBuyOrderWithPair(pairObject.pairSimple);
+        // Calculem el profit
+        let profit = await tradingControl.calculateProfit(buyOrder, addOrderResult);
+        // Guardem el profit a la ordre, per guardar-ho en el log
+        addOrderResult.result.profit = profit.result;
 
         // Guardem el log  la BD
         let botData = new BotPersistentData().getInstance();

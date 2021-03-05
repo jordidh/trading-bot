@@ -7,7 +7,6 @@ const frisby = require('frisby');
 process.env.NODE_ENV = 'test';
 
 describe('Buy and Sell Posts', function() {
-    /*
     it('should fail if body is empty', function () {
         return frisby.post('http://localhost:4401/')
             //.inspectJSON()
@@ -78,7 +77,7 @@ describe('Buy and Sell Posts', function() {
             }
         });
     });
-*/
+
     it('should create a sell order successfully', function() {
         // preu = volum * preu/u
         // preu de compra = 0,002427573 × 41193,4 = 99,999985618

@@ -105,6 +105,11 @@ exports.Post = async function (req, res) {
     let addOrderResult = {};
     // Si estem testejant l'api cridem a la versió mokejada de kraken
     if (req.body.test && req.body.test === "mock-kraken") {
+        // Establim el balance i el ticker per poder vendre i calcular el benefici posteriorment
+        // El balance ens indica la quantitat que estem venent (hauria de ser el mateix que la ordre de compra d'aquesta crypto)
+        krakenMoked.setBalance(req.body.testBalance);
+        // El ticker ens indica el preu a que estem venent
+        krakenMoked.setCryptoValue(req.body.testCryptoValue);
         // Compra per testejar
         addOrderResult = await tradingControl.addOrder(krakenMoked, req.body.action, req.body.pair, EXECUTE_ORDER);
     } else {
@@ -120,19 +125,18 @@ exports.Post = async function (req, res) {
         // Si estem testejant l'api cridem a la versió mokegem la ordre recuperada
         let buyOrder = {};
         if (req.body.test && req.body.test === "mock-kraken") {
-            buyOrder = { 
-                "error" : [], 
-                "result" : { 
-                    "descr" : "sell 0.002427573 " + pairObject.pairSimple + " @ market", 
-                    "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
-                    "price" : 42193.4
-                }
-            };
+            // Establim l'orde de compra per testejar
+            buyOrder = req.body.testBuyOrder;
         } else {
             buyOrder = await botData.GetLastBuyOrderWithPair(pairObject.pairSimple);
         }
         // Calculem el profit
-        let profit = await tradingControl.calculateProfit(buyOrder, addOrderResult);
+        let profit = await tradingControl.calculateProfit(buyOrder, addOrderResult.result);
+        if (profit.result === -1) {
+            logger.error("Error calculant profits: " + profit.error[0] + " - " + JSON.stringify(buyOrder) + " - " + JSON.stringify(addOrderResult.result));
+            // Guardem l'error de càlcul de profit a dins de l'estructura de la ordre que retornem
+            addOrderResult.error.push(profit.error[0]);
+        }
         // Guardem el profit a la ordre, per guardar-ho en el log
         addOrderResult.result.profit = profit.result;
     }

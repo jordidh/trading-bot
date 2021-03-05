@@ -78,7 +78,7 @@ describe('Trading Control, addOrder', () =>  {
         var orderAddedExpected = {
             "error" : [ ],
             "result" : {
-                "descr" : [ { "order" : "buy 0.002427573 XBTEUR @ market" } ],
+                "descr" : { "order" : "buy 0.002427573 XBTEUR @ market" },
                 "txid" : [ "OAVY7T-MV5VK-KHDF5X" ],
                 "price" : 41193.4
             }

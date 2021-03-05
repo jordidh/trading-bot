@@ -230,12 +230,12 @@ bot.on(BUTTONS.logs.command, async (msg) => {
         let botData = new BotPersistentData().getInstance();
         let logs = await botData.GetLastLogs(parseInt(msgWords[1]));
 
-        console.log(logs);
+        //console.log(logs);
 
         // Formategem els logs
         let logsFormated = await tradingControl.formatLogs(logs);
 
-        console.log(logsFormated);
+        //console.log(logsFormated);
 
         //var logs = await database.arrayGetUserLogs(id)
         // Menú Principal

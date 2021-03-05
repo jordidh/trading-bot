@@ -119,7 +119,7 @@ var tradingControl = require('./tradingControl');
 
         } else { // sell
 
-            // Si estem venent mirem que tinguem vendre el que estem indicant
+            // Si estem venent mirem que tinguem alguna cosa per vendre de la crypto que estem indicant
             // A la funció getFunds hem de passar la cripto amb una X davant, ex: XXBT. Atenció, no sempre, p.e. amb ADA no es posa
             let balance = await tradingControl.getFunds(kraken, pairObject.result.cryptoX);
             if (balance.error && Array.isArray(balance.error) && balance.error.length > 0) {
@@ -160,7 +160,7 @@ var tradingControl = require('./tradingControl');
                 return { "error" : [ "error adding order: " + orderAdded.error[0] ], "result" : { } }
             }
 
-            // Afegim el price al reusultat retornat per kraken
+            // Afegim el price al reusultat retornat per kraken, a nivell informatiu i per calcular el profit
             //console.log(orderAdded);
             orderAdded.result.price = priceToSell;
 
@@ -304,6 +304,7 @@ exports.calculateProfit = async function(buyOrder, sellOrder) {
             "result" : -1
         }
     }
+
     let buyVolume = parseFloat(buyOrderItems[1]);
 
     // Calculem el preu total de compra

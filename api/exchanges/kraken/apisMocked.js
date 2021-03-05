@@ -147,7 +147,7 @@ exports.addOrder = async function (pair, volume, action) {
         var msg = {
             "error" : [],
             "result" : {
-                "descr" : [ { "order" : action + " " + volume + " " + pair + " @ market" } ],
+                "descr" : { "order" : action + " " + volume + " " + pair + " @ market" },
                 "txid" : m_result.txid,
                 "price" : m_result.price
             }

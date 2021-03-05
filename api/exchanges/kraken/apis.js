@@ -180,10 +180,10 @@ exports.addOrder = async function (pair, volume, action) {
                 ordertype: 'market',
                 volume: volume
             });
-        console.log(msg);
+        //console.log(msg);
         return msg;
     } catch (err) {
-        console.log(err);
+        //console.log(err);
         return { "error" : [ err.message ], "result" : {} };
     }
 }
@@ -219,7 +219,7 @@ exports.getTicker = async function (pair) {
         // Ens quedem amb result.XXBTZEUR.a[0] on a = ask array(<price>, <whole lot volume>, <lot volume>),
         // Nota: XXBTZEUR = X + crypto + Z + moneda
         var cryptoValue = await krakenAPI.api('Ticker', { pair: pair });
-        console.log("kraken Ticker = " + cryptoValue);
+        //console.log("kraken Ticker = " + cryptoValue);
         //var volume = funds / parseFloat(cryptoValue.result[Object.keys(arr.result)[0]].a[0]);
         //console.log("volume = " + volume);
         //return volume;

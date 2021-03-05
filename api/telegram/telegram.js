@@ -131,13 +131,16 @@ bot.on(BUTTONS.info.command, async (msg) => {
 
     // Validación usuario
     if (id === Number(config.TELEGRAM.USER_ID)) {
+        let exchangeConfig = `\nFunds currency = ` + config.EXCHANGE_KRAKEN.FUNDS_CURRENCY + 
+            `\nMax funds to buy = ` + config.EXCHANGE_KRAKEN.MAX_FUNDS_TO_BUY +
+            `\nExchange comission = ` + config.EXCHANGE_KRAKEN.COMMISSION_PERCENTAGE + '%';
         let botInfo = pjson.name + " " + pjson.version;
         // Menú Principal
         let replyMarkup = bot.keyboard([
             [BUTTONS.info.label, BUTTONS.bot.label],
             [BUTTONS.balance.label]
         ], { resize: true });
-        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label + "\n\n" + botInfo, { replyMarkup, parseMode })
+        return bot.sendMessage(id, `<b>` + `👋 Hola ` + first_name+ `</b>` + TEXT.info.label + "\n" + exchangeConfig + "\n\n" + botInfo, { replyMarkup, parseMode })
     }
 });
 
@@ -450,6 +453,27 @@ bot.on('callbackQuery', async (msg) => {
     }
 })
 */
+
+bot.on(['error'], async (msg) => {
+    logger.error('Bot error', msg);
+});
+
+bot.on(['reconnecting'], async (msg) => {
+    logger.info('Bot reconnecting');
+});
+
+bot.on(['reconnected'], async (msg) => {
+    logger.info('Bot reconnected');
+});
+
+bot.on(['start'], async (msg) => {
+    logger.info('Bot start');
+});
+
+bot.on(['stop'], async (msg) => {
+    logger.info('Bot stop');
+});
+
 
 bot.start();
 logger.info({ message: 'SERVIDOR BOT TELEGRAM OK!' })

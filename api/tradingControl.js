@@ -5,6 +5,7 @@
  */
 var config = require('../config/config');
 var tradingControl = require('./tradingControl');
+const { loggers } = require('winston');
 
 /**
  * Package Functions
@@ -259,7 +260,7 @@ exports.getFunds = async function (kraken, currency) {
  *      }
  */
 exports.calculateProfit = async function(buyOrder, sellOrder) {
-    // Validem que les dades d'entrada s'ón correctes
+    // Validem que les dades d'entrada són correctes
     if (buyOrder === undefined || buyOrder === null || typeof buyOrder != "object") {
         return {
             "error" : [ "Buy order is not defined" ],
@@ -324,8 +325,8 @@ exports.calculateProfit = async function(buyOrder, sellOrder) {
             "result" : -1
         }
     }
-    let sellVolume = parseFloat(sellOrderItems[1])
-    ;
+    let sellVolume = parseFloat(sellOrderItems[1]);
+
     // Calculem el preu total de venda
     let totalSellPrice = sellOrder.price * sellVolume;
 

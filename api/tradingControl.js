@@ -195,7 +195,7 @@ exports.getFunds = async function (kraken, currency) {
 
         // Si s'ha retornat un error
         if (balance && balance.error && Array.isArray(balance.error) && balance.error.length > 0) {
-            logger.error("Error calling krakenAPI Balance: " + balance.error);
+            //loggerlogger.error("Error calling krakenAPI Balance: " + balance.error);
             return { 
                 "error" : [ balance.error[0] ], 
                 "result" : { 

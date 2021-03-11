@@ -63,7 +63,7 @@ const { loggers } = require('winston');
             // Si no tenim fons retornem tot a 0
             if (balance.result.funds === 0) {
                 return { 
-                    "error" : [ "no funds to buy" ], 
+                    "error" : [ "no funds to buy for currency " + currency ], 
                     "result" : {
                             "funds": 0,
                             "fundsMinusCommission": 0,

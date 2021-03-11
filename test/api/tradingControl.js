@@ -49,7 +49,7 @@ describe('Trading Control, addOrder', () =>  {
         //console.log(krakenMocked.balance);
 
         var orderAddedExpected = {
-            "error" : [ "no funds to buy" ],
+            "error" : [ "no funds to buy for currency ZEUR" ],
             "result" : {
                 "exchangePercentage": 1,
                 "funds": 0,

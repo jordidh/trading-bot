@@ -30,6 +30,10 @@ const BUTTONS = {
         label: '💰 BALANCE',
         command: '/balance'
     },
+    funds: {
+        label: '💰 FUNDS',
+        command: '/funds'
+    },
     logs: {
         label: '📊 LOGS',
         command: '/logs'
@@ -68,6 +72,7 @@ const TEXT = {
     info: {
         label: `, Comandes disponibles:\n\n` + 
                `<b>\/balance</b>\n` +
+               `<b>\/funds [currency], Ex: /funds EUR</b>\n` +
                `<b>\/buy [pair]</b>, Ex: /buy XBT/EUR, /buy XBT/USD, /buy ETH/EUR, /buy ADA/EUR, /buy USDT/EUR\n` +
                `<b>\/sell [pair]</b>, Ex: /sell XBT/EUR\n` +
                `<b>\/buytest [pair]</b>, Ex: /buytest XBT/EUR\n` +
@@ -210,6 +215,38 @@ bot.on(BUTTONS.balance.command, async (msg) => {
             [BUTTONS.balance.label]
         ], { resize: true });
         return bot.sendMessage(id, JSON.stringify(balance, null, "  "), { replyMarkup, parseMode });
+    }
+})
+
+
+// Funds
+bot.on(BUTTONS.funds.command, async (msg) => {
+    let id = msg.from.id
+    let first_name = msg.from.first_name
+    let parseMode = 'html';
+    // Validación usuario
+    if (id === Number(config.TELEGRAM.USER_ID)) {
+        let msgWords = msg.text.split(' ');  // Ex: '/buy_test XEUR'
+
+        // Si hi ha un error en el missatge rebut sortim
+        if (msgWords.length != 2) {
+            return bot.sendMessage(id, 
+                "Error, la crida a la comanda " + BUTTONS.funds.command + " ha de tenir un paràmetre amb el currency, ex: funds EUR",
+                { parseMode, parseMode }
+            );
+        }
+
+        // Tot correcte, creem l'ordre
+        let currency = msgWords[1]; //"XBTEUR"
+
+        // Muestra logs usuario
+        var funds = await tradingControl.getFunds(kraken, currency);
+        // Menú Principal
+        let replyMarkup = bot.keyboard([
+            [BUTTONS.info.label, BUTTONS.bot.label],
+            [BUTTONS.balance.label]
+        ], { resize: true });
+        return bot.sendMessage(id, JSON.stringify(funds, null, "  "), { replyMarkup, parseMode });
     }
 })
 
